@@ -1,0 +1,12 @@
+python-barcode
+XlsxWriter
+requests
+Pillow
+pandas
+numpy
+jellyfish
+beautifulsoup4
+scikit-learn
+zeep
+PyQt5
+fpdf

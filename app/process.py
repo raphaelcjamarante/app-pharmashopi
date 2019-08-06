@@ -378,7 +378,7 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
         return
 
     try:
-        cmds = app.filters.filtrage_picking(nbrcmds, nbrmedic, site, livraison)
+        cmds = app.filters.filtrage_picking(int(nbrcmds), int(nbrmedic), site, livraison)
 
         if cmds:
             logger.info(f"Commandes selectionnées par les filtres : {list(cmds.keys())}")

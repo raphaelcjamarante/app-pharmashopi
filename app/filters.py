@@ -17,7 +17,7 @@ def surnombre(nbrmedic, produits):
 
     Parameters
     ----------
-    nbrmedic : str
+    nbrmedic : int
         Nombre maximal d'un article par commande (choisi via GUI)
     produits : dict
         Dictionnaire de produits
@@ -25,13 +25,13 @@ def surnombre(nbrmedic, produits):
 
     for key in produits:
         prod = produits[key]
-        if int(prod["quantity"]) > int(nbrmedic):
+        if int(prod["quantity"]) > nbrmedic:
             return 1
     return 0
     
 
 #------------------------------------------------------------
-def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
+def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
     """ Trouve le nombre souhaité de commandes avec le type de livraison souhaité
     et avec au maximum un nombre maximal d'un certain article
 
@@ -39,11 +39,11 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
     ----------
     livraison: str
         Nom du type de livraison (les principales : Colissimo, Mondial Relay et Lettre suivie)
-    nbrcmds : str
+    nbrcmds : int
         Nombre de commandes à imprimer (choisi via GUI)
-    nbrmedic : str
+    nbrmedic : int
         Nombre maximal d'un article par commande (choisi via GUI)
-    site : str
+    site_filter : str
         Selectionne le site souhaité
 
     Return
@@ -57,14 +57,14 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
 
     commandes = {}
     break_var = 0
-    limit = nbrcmds
+    limit = str(nbrcmds)
 
-    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site}/filter/orderby/date_created/desc/limit/1?key={cle_api}")
+    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/desc/limit/1?key={cle_api}")
 
     for key in cmds:
         derniere_date = cmds[key]["date_created"]
 
-    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site}/filter/orderby/date_created/asc/limit/{limit}?key={cle_api}")
+    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}?key={cle_api}")
 
     if not cmds:
         return commandes
@@ -93,12 +93,7 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
             else:
                 commandes[key] = cmd
 
-            limit = int(nbrcmds) - len(commandes)
-
-            url_path = f"api/orders/filter/status/1{site}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}?key={cle_api}"
-            cmds = app.utilities.get_request(url_path)
-
-            if len(commandes) >= int(nbrcmds):
+            if len(commandes) >= nbrcmds:
                 break_var = 1
                 break
 
@@ -107,6 +102,11 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
                 print("\nToutes les commandes enregistrées ont été analysées")
                 print(f"{len(commandes)} commandes du type souhaité ont été trouvées\n")
                 break
+
+            limit = str(nbrcmds - len(commandes))
+
+            url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}?key={cle_api}"
+            cmds = app.utilities.get_request(url_path)
 
         if break_var == 1:
             break

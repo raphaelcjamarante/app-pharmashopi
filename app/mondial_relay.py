@@ -184,7 +184,6 @@ def setstatus(idcmd, status, tracking_code):
 # ----------------------------
 
 def add_to_list(idcmd, exp_nbr):
-
     entry = {str(idcmd): str('%08d' %  int(exp_nbr))}
 
     entry = DataFrame(entry.values(), index=entry.keys(), columns=['NumeroColis'])
@@ -195,7 +194,7 @@ def add_to_list(idcmd, exp_nbr):
 
     path = app.utilities.get_path(f'docs/tracking_mondial_relay/{file_name}.csv')
     if os.path.exists(path):
-        df = pd.read_csv(path, index_col=0, sep=';')
+        df = pd.read_csv(path, index_col=0, sep=';', dtype={'NumeroColis': str})
         df = df.append(entry, sort=True)
         df.to_csv(path, sep=';')
     else:

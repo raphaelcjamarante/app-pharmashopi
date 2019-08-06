@@ -5,8 +5,21 @@ import unittest
 import app.process
 import app.lettre_suivie
 import app.mondial_relay
+import app.filters
 
-class Tests(unittest.TestCase):
+class TestsUnit(unittest.TestCase):
+
+    def test_filtrage_picking(self):
+        nbrcmds = 5
+        nbrmedic = 30
+        site_filter = "/filter/store_id/pharmashopi"
+        livraison = ""
+        cmds = app.filters.filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison="")
+        assert len(cmds.keys()) == nbrcmds
+
+        #TODO : assert all are one livraison
+
+class TestsIntegrated(unittest.TestCase):
 
     def test_picking(self):
 
@@ -33,7 +46,6 @@ class Tests(unittest.TestCase):
 
         # ------- etiquette lettre --------
         app.lettre_suivie.generer_etiquette(idcmd, 0, 123, True)
-
 
 #-----------------------------------------------------------
 

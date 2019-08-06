@@ -66,6 +66,9 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
 
     cmds = app.utilities.get_request(f"api/orders/filter/status/1{site}/filter/orderby/date_created/asc/limit/{limit}?key={cle_api}")
 
+    if not cmds:
+        return commandes
+
     while True:
         for key in cmds:
             print(f"Filtrage de la commande : {key}")
@@ -90,6 +93,11 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
             else:
                 commandes[key] = cmd
 
+            limit = int(nbrcmds) - len(commandes)
+
+            url_path = f"api/orders/filter/status/1{site}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}?key={cle_api}"
+            cmds = app.utilities.get_request(url_path)
+
             if len(commandes) >= int(nbrcmds):
                 break_var = 1
                 break
@@ -102,10 +110,6 @@ def filtrage_picking(nbrcmds, nbrmedic, site, livraison=""):
 
         if break_var == 1:
             break
-
-        limit = int(nbrcmds) - len(commandes)
-
-        cmds = app.utilities.get_request(f"api/orders/filter/status/1{site}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}?key={cle_api}")
 
     print("\n")
     return commandes

@@ -97,6 +97,7 @@ class mondial_relay(QWidget):
         # ----------
         vbox_params = QVBoxLayout()
         
+        # ---------- not usable (yet) due to back-office limitation
         label = QLabel()
         label.setText("Finaliser la commande")
         label.setAlignment(Qt.AlignCenter)
@@ -175,6 +176,7 @@ class lettre_suivie(QWidget):
         # ----------
         vbox_params = QVBoxLayout()
         
+        # ---------- not usable (yet) due to back-office limitation
         label = QLabel()
         label.setText("Finaliser la commande")
         label.setAlignment(Qt.AlignCenter)
@@ -192,6 +194,28 @@ class lettre_suivie(QWidget):
         hbox.addWidget(self.rb_1)
         hbox.addWidget(self.rb_2)
         #vbox_params.addLayout(hbox)
+        
+        # ----------
+        
+        label = QLabel()
+        label.setText("Mode lettre")
+        label.setAlignment(Qt.AlignCenter)
+        vbox_params.addWidget(label)
+
+        self.rb_suivie = QRadioButton()
+        self.rb_suivie.setText("Suivie")
+        self.rb_suivie.setChecked(True)
+        self.rb_suivie.toggled.connect(self.rb_suivie_clicked)
+        self.rb_simple = QRadioButton()
+        self.rb_simple.setText("Simple")
+        self.rb_simple.setChecked(False)
+        self.rb_simple.toggled.connect(self.rb_simple_clicked)
+
+        hbox = QHBoxLayout()
+        hbox.setAlignment(Qt.AlignCenter)
+        hbox.addWidget(self.rb_suivie)
+        hbox.addWidget(self.rb_simple)
+        vbox_params.addLayout(hbox)
         
         # ----------
 
@@ -251,8 +275,19 @@ class lettre_suivie(QWidget):
         if (len(code_cmd) == 13) and (len(code_lettre) == 13) :
             if self.rb_1.isChecked() ^ self.rb_2.isChecked():
                 app.lettre_suivie.generer_etiquette(code_cmd[:6], self.rb_1.isChecked(), code_lettre, self.mode_teste)
+                if self.rb_suivie.isChecked():
+                    self.le_lettre.setText("")
                 self.le_commande.setText("")
-                self.le_lettre.setText("")
+
+    def rb_suivie_clicked(self, enabled):
+        if enabled:
+            self.le_lettre.clear()
+            self.le_lettre.setReadOnly(False)
+
+    def rb_simple_clicked(self, enabled):
+        if enabled:
+            self.le_lettre.setText('Lettre simple')
+            self.le_lettre.setReadOnly(True)
 
 #------------------------------------------------------------
 class colissimo(QWidget):

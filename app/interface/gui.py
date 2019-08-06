@@ -42,13 +42,13 @@ class main_window(QMainWindow):
         extractAction = QAction("Mode Teste", self, checkable=True)
         extractAction.setShortcut("Ctrl+M")
         extractAction.setChecked(self.mode_teste)
-        extractAction.triggered.connect(lambda state: utilities.change_mode(self, state, self.children))
+        extractAction.triggered.connect(lambda state: app.utilities.change_mode(self, state, self.children))
         toolsMenu.addAction(extractAction)
 
         extractAction = QAction("Open README.txt", self)
         extractAction.triggered.connect(lambda: app.utilities.open_file('README.txt'))
         helpMenu.addAction(extractAction)
-
+        
         tab_manager = tabs_widget(self.mode_teste)
         self.children.append(tab_manager)
         self.setCentralWidget(tab_manager)

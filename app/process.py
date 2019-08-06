@@ -317,9 +317,7 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
 
     try:
         cmds = app.utilities.get_request(f"api/orders{site}/filter/orderby/date_created/desc/limit/{nbrcmds}?key={cle_api}")
-
         detection(cmds, nbrjours)
-
         print('Procesus terminé avec succès\n\n')
         logger.info("Procesus terminé avec succès")
         logger.new_formatter(mode="end_process")

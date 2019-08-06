@@ -231,7 +231,6 @@ def generer_etiquette(idcmd, finaliser, mode_teste):
         wsdl = "http://api.mondialrelay.com/Web_Services.asmx?WSDL"
         client = Client(wsdl)
         parameters = get_info_mondial_relay(cmd, enseigne, private_key)
-        print(parameters)
         r_expedition = client.service.WSI2_CreationExpedition(**parameters)
         #r = client.service.WSI2_CreationEtiquette(**parameters_etiquette)
 

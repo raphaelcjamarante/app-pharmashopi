@@ -21,7 +21,7 @@ class etiquettes(QWidget):
         self.children = []
 
         main_layout = QVBoxLayout()
-        labels = label_stack(self)
+        labels = label_stack(self.mode_teste)
         self.children.append(labels)
         main_layout.addWidget(labels)
         self.setLayout(main_layout)
@@ -56,19 +56,19 @@ class label_stack(QWidget):
         stack_lettre = lettre_suivie(self.mode_teste)
         stack_colissimo = colissimo(self.mode_teste)
         
-        stack = QStackedWidget()
-        stack.addWidget(stack_mondial)
-        stack.addWidget(stack_lettre)
-        stack.addWidget(stack_colissimo)
+        self.stack = QStackedWidget()
+        self.stack.addWidget(stack_mondial)
+        self.stack.addWidget(stack_lettre)
+        self.stack.addWidget(stack_colissimo)
 
-        for i in range(stack.count()):
-            self.children.append(stack.widget(i))
+        for i in range(self.stack.count()):
+            self.children.append(self.stack.widget(i))
 
         # ----------
         
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
-        hbox.addWidget(stack)
+        hbox.addWidget(self.stack)
         main_layout.addLayout(hbox)
 
         # ----------

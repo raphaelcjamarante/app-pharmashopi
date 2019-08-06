@@ -155,7 +155,7 @@ def get_newref(idproduit, stockref):
     ------
     String de la reference
     """
-    prods = get_request(f"api/products/filter/id/{idproduit}?key={cle_api}")
+    prod = get_request(f"api/products/filter/id/{idproduit}?key={cle_api}")
 
     if str(stockref) in prod[str(idproduit)]["stock"]:
         return prod[str(idproduit)]["stock"][str(stockref)]["stock_ean"]

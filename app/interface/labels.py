@@ -1,24 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
-                             QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QRadioButton, QSpinBox, 
-                             QStackedWidget, QTabWidget, QVBoxLayout, QWidget)
-
+from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPushButton, 
+                             QRadioButton, QStackedWidget, QVBoxLayout, QWidget)
 from PyQt5.QtCore import Qt
 
 import app.lettre_suivie
-import app.log
 import app.mondial_relay
 import app.utilities
-
-logger = app.log.setup_logger(__name__)
 
 #------------------------------------------------------------
 class etiquettes(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
         labels = label_stack(self.mode_teste)
@@ -30,8 +25,8 @@ class etiquettes(QWidget):
 class label_stack(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
 
@@ -85,8 +80,8 @@ class label_stack(QWidget):
 class mondial_relay(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
 
@@ -164,8 +159,8 @@ class mondial_relay(QWidget):
 class lettre_suivie(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
 
@@ -293,8 +288,8 @@ class lettre_suivie(QWidget):
 class colissimo(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
         
         main_layout = QVBoxLayout()
 

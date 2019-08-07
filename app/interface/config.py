@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
-                             QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QRadioButton, QSpinBox, 
-                             QStackedWidget, QTabWidget, QVBoxLayout, QWidget)
-
+from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, 
+                             QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout, QWidget)
 from PyQt5.QtCore import Qt
 
-from ast import literal_eval
-from pandas import DataFrame
-import pandas as pd
-
-import app.interface
-import app.log
 import app.utilities
-
-logger = app.log.setup_logger(__name__)
 
 #------------------------------------------------------------
 class config(QWidget):

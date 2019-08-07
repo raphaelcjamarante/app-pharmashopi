@@ -16,8 +16,6 @@ import app.robot
 import app.utilities
 
 logger = app.log.setup_logger(__name__)
-cle_api = app.utilities.get_config_data()['cle_api']
-
 
 #------------------------------------------------------------
 def setstatus(idcommande):
@@ -31,7 +29,7 @@ def setstatus(idcommande):
 
     data = [{"id": idcommande, "status": "2"}]
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    url = f"http://pharmashopi.com/api/orders?key={cle_api}"
+    url = f"http://pharmashopi.com/api/orders"
     r = requests.put(url, data=json.dumps(data), headers=headers)
 
 
@@ -106,7 +104,7 @@ def picking(cmds, sortie, livraison, mode_teste):
             logger.info(f"Produit {prod['reference']} : stock du robot ({prod['robot_stock']}) est supérieur ou égal à la quantité souhaitée ({prod['quantity']})")
             if not mode_teste:
                 app.robot.retrait(prod["reference"],prod["quantity"],indexrequette,sortie)
-            logger.info(f"Le robot a libéré {prod['quantity']} item(s) de l'article {prod['reference']} ")
+                logger.info(f"Le robot a libéré {prod['quantity']} item(s) de l'article {prod['reference']} ")
             logger.new_formatter("newline")
             indexrequette += 1
     print("\n")
@@ -283,13 +281,13 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
 
     Parameters
     ----------
-    nbrcmds : str
+    nbrcmds : int
         Nombre de commandes à imprimer (choisi via GUI)
     sites : dict
         Informations des sites à rechercher
     nbrjours : int
         Commandes multiples du même client dans cet intervalle de jours présente un risque
-    mode_teste : boolean
+    mode_teste : bool
         (Pas utilisé)
     """
 
@@ -301,23 +299,15 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
 
     print("Chargement des commandes...")
     print("******************************************\n")
-    site = ""
-    if sites["Pharmashopi"] == True and sites["Espace Contention"] == True:
-        site = ""
-    elif sites["Pharmashopi"] == True:
-        site = "/filter/store_id/pharmashopi"
-    elif sites["Espace Contention"] == True:
-        site = "/filter/store_id/contention"
-    else:
-        logger.warning("Aucun site n'a été sélectionné")
-        logger.new_formatter(mode="newline")
-        logger.info("Procesus terminé avec succès")
-        logger.new_formatter(mode="end_process")
-        return
 
     try:
-        cmds = app.utilities.get_request(f"api/orders{site}/filter/orderby/date_created/desc/limit/{nbrcmds}?key={cle_api}")
-        detection(cmds, nbrjours)
+        site = app.utilities.get_site(sites)
+        if site == None:
+            logger.warning("Aucun site n'a été sélectionné")
+            logger.new_formatter(mode="newline")
+        else:
+            cmds = app.utilities.get_request(f"api/orders{site}/filter/orderby/date_created/desc/limit/{nbrcmds}")
+            detection(cmds, nbrjours)
         print('Procesus terminé avec succès\n\n')
         logger.info("Procesus terminé avec succès")
         logger.new_formatter(mode="end_process")
@@ -341,13 +331,13 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
 
     Parameters
     ----------
-    nbrcmds : str
+    nbrcmds : int
         Nombre de commandes à imprimer (choisi via GUI)
-    nbrmedic : str
+    nbrmedic : int
         Nombre maximal d'un article par commande (choisi via GUI)
     sites : dict
         Informations des sites à rechercher
-    sortie : 
+    sortie : int
         Choisit la sortie du robot
     livraison : str
         Filtre le mode de livraison (Colissimo, Mondial Relay et Lettre suivie)
@@ -363,49 +353,37 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
 
     print("Chargement des commandes...")
     print("******************************************\n")
-    site = ""
-    if sites["Pharmashopi"] == True and sites["Espace Contention"] == True:
-        site = ""
-    elif sites["Pharmashopi"] == True:
-        site = "/filter/store_id/pharmashopi"
-    elif sites["Espace Contention"] == True:
-        site = "/filter/store_id/contention"
-    else:
-        logger.warning("Aucun site n'a été sélectionné")
-        logger.new_formatter(mode="newline")
-        logger.info("Procesus terminé avec succès")
-        logger.new_formatter(mode="end_process")
-        return
 
     try:
-        cmds = app.filters.filtrage_picking(int(nbrcmds), int(nbrmedic), site, livraison)
-
-        if cmds:
-            logger.info(f"Commandes selectionnées par les filtres : {list(cmds.keys())}")
+        site = app.utilities.get_site(sites)
+        if site == None:
+            logger.warning("Aucun site n'a été sélectionné")
             logger.new_formatter(mode="newline")
         else:
-            logger.warning("Aucune commande n'a été trouvée")
-            logger.new_formatter(mode="newline")
-            logger.info("Procesus terminé avec succès")
-            logger.new_formatter(mode="end_process")
-            return
+            cmds = app.filters.filtrage_picking(nbrcmds, nbrmedic, site, livraison)
+            if cmds == {}:
+                logger.warning("Aucune commande n'a été trouvée")
+                logger.new_formatter(mode="newline")
+            else:
+                logger.info(f"Commandes selectionnées par les filtres : {list(cmds.keys())}")
+                logger.new_formatter(mode="newline")
 
-        picking(cmds, sortie, livraison, mode_teste)
-        bonprep(cmds)
-        print("Fichiers prets a imprimer\n")
+                picking(cmds, sortie, livraison, mode_teste)
+                bonprep(cmds)
+                print("Fichiers prets a imprimer\n")
 
-        ordreCmds = list(cmds.keys())
-        ordreCmds.sort()
+                ordreCmds = list(cmds.keys())
+                ordreCmds.sort()
 
-        if not mode_teste:
-            for key in cmds:
-                setstatus(key)
-                print(f"La commande {key} a changée de status")
-                logger.info(f"Status de la commande {key} : {app.utilities.get_status(key)}")
-            logger.new_formatter(mode="newline")
-            print("\n")
+                if not mode_teste:
+                    for key in cmds:
+                        setstatus(key)
+                        print(f"La commande {key} a changée de status")
+                        logger.info(f"Status de la commande {key} : {app.utilities.get_status(key)}")
+                    logger.new_formatter(mode="newline")
+                    print("\n")
 
-        detection(cmds, nbrjours)
+                detection(cmds, nbrjours)
 
         print('Procesus terminé avec succès\n\n')
         logger.info("Procesus terminé avec succès")

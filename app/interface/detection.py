@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QGroupBox, 
-                             QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressBar,
-                             QPushButton, QRadioButton, QSpinBox, QStackedWidget, QTabWidget, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
+                             QLineEdit, QListWidget, QListWidgetItem, QMessageBox, QProgressBar, QPushButton, 
+                             QSpinBox, QVBoxLayout, QWidget)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import (QIcon)
-
-import pandas as pd
-import requests
+from PyQt5.QtGui import QIcon
 
 import app.process
 import app.utilities
 
-cle_api = app.utilities.get_config_data()['cle_api']
+import pandas as pd
 
 #------------------------------------------------------------
 class detection(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
 
@@ -54,8 +51,9 @@ class detection(QWidget):
         label.setText("Nombre de commandes souhaité pour la détection : ")
 
         self.sb_nbrcmds = QSpinBox()
-        self.sb_nbrcmds.setMaximum(1000)
         self.sb_nbrcmds.setValue(100)
+        self.sb_nbrcmds.setMinimum(1)
+        self.sb_nbrcmds.setMaximum(1000)
         
         form_params.addRow(label, self.sb_nbrcmds)
 
@@ -66,6 +64,8 @@ class detection(QWidget):
 
         self.sb_nbrjours = QSpinBox()
         self.sb_nbrjours.setValue(3)
+        self.sb_nbrjours.setMinimum(1)
+        self.sb_nbrjours.setMaximum(5)
         
         form_params.addRow(label, self.sb_nbrjours)
 
@@ -136,10 +136,8 @@ class detection(QWidget):
     def demarrer_detection(self):
         choix = QMessageBox.question(self, 'Continuer Procedure', "Continuer?", QMessageBox.Yes | QMessageBox.No)
         if choix == QMessageBox.Yes:
-            #self.progress.setValue(10)
             sites = {"Pharmashopi": self.cb_site_1.isChecked(), "Espace Contention": self.cb_site_2.isChecked()}
             app.process.detection_arnaque(self.sb_nbrcmds.value(), sites, self.sb_nbrjours.value(), self.mode_teste)
-            #self.progress.setValue(10)
 
     # --------------------------
     def save(self):
@@ -208,8 +206,8 @@ class detection(QWidget):
 class dialog_add_prod(QDialog):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         self.setWindowTitle("Ajouter Produit de Risque")
         self.setWindowModality(Qt.ApplicationModal)
@@ -235,7 +233,7 @@ class dialog_add_prod(QDialog):
     # ----------- Actions ---------------------
     def accept(self):
         if (self.id_prod.text() != "") and (self.marque_prod.text() != "") and (self.nom_prod.text() != ""):
-            prods = app.utilities.get_request(f"api/products/filter/id/{self.id_prod.text()}?key={cle_api}")
+            prods = app.utilities.get_request(f"api/products/filter/id/{self.id_prod.text()}")
 
             if prods:
                 return super().accept()

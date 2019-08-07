@@ -13,13 +13,18 @@ import requests
 import unicodedata
 import webbrowser
 
+import app.log
 import app.conn
-#import app.log
 
-#logger = app.log.setup_logger(__name__)
+logger = app.log.setup_logger(__name__)
 
 #------------------------------------------------------------
 def change_mode(self, state, children):
+    """
+    self : gui component
+    state : bool
+    children : list (of gui components)
+    """
     self.mode_teste = state
     for child in children:
         change_mode(child, state, child.children)
@@ -27,30 +32,28 @@ def change_mode(self, state, children):
 #------------------------------------------------------------
 def get_path(file):
     """
-    file : relative path from root of project
+    file : str of relative path starting at root of project
     """
     cwd = os.path.abspath(os.path.dirname(__file__))
-    parent_dir = os.path.join(cwd, "..")
-    path = os.path.join(parent_dir, file)
+    root = os.path.join(cwd, "..")
+    path = os.path.join(root, file)
     return path
 
 #------------------------------------------------------------
 def open_file(file):
-    try:
-        path = get_path(file)
-        if os.path.exists(path):
-            webbrowser.open(path)
-        else:
-            logger.warning(f"Fichier {path} n'existe pas")
-    except Exception as e:
-            logger.exception(f"Erreur d'ouverture du fichier : {e}")
+    """
+    file : str of relative path starting at root of project
+    """
+    path = get_path(file)
+    if os.path.exists(path):
+        webbrowser.open(path)
+    else:
+        print(f"Fichier {path} n'existe pas")
 
 #------------------------------------------------------------
 def get_config_data():
 
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(cwd, "../docs/config_data.csv")
-
+    path = get_path("docs/config_data.csv")
     config_data = pd.read_csv(path, index_col="parameter")
     config_data = config_data.to_dict()
     config_data = config_data['value']
@@ -76,7 +79,7 @@ cle_api = get_config_data()['cle_api']
 
 #------------------------------------------------------------
 def get_request(request):
-    url = f"http://pharmashopi.com/{request}"
+    url = f"http://pharmashopi.com/{request}?key={cle_api}"
     r = requests.get(url)
     r.raise_for_status()
     return r.json()
@@ -100,7 +103,7 @@ def quel_stock(idproduit):
     sbiox = 0
     spsl = 0
 
-    prods = get_request(f"api/products/filter/id/{idproduit}?key={cle_api}")
+    prods = get_request(f"api/products/filter/id/{idproduit}")
 
     for key in prods:
         slocal = int(prods[key]["stock_total_quantity"])
@@ -130,7 +133,7 @@ def quel_stock(idproduit):
 
 #------------------------------------------------------------
 def get_reference(idproduit):
-    prods = get_request(f"api/products/filter/id/{idproduit}?key={cle_api}")
+    prods = get_request(f"api/products/filter/id/{idproduit}")
 
     for key in prods:
         ean = prods[key]["ean"]
@@ -155,7 +158,7 @@ def get_newref(idproduit, stockref):
     ------
     String de la reference
     """
-    prod = get_request(f"api/products/filter/id/{idproduit}?key={cle_api}")
+    prod = get_request(f"api/products/filter/id/{idproduit}")
 
     if str(stockref) in prod[str(idproduit)]["stock"]:
         return prod[str(idproduit)]["stock"][str(stockref)]["stock_ean"]
@@ -165,7 +168,7 @@ def get_newref(idproduit, stockref):
 
 #------------------------------------------------------------
 def get_status(idcommande):
-    cmds = get_request(f"api/orders/filter/id/{str(idcommande)}?key={cle_api}")
+    cmds = get_request(f"api/orders/filter/id/{str(idcommande)}")
 
     for key in cmds:
         status = cmds[key]["status"]
@@ -174,6 +177,17 @@ def get_status(idcommande):
     elif status == "2":
         return "En traitement"
 
+
+#------------------------------------------------------------
+def get_site(sites):
+    site = None
+    if sites["Pharmashopi"] == True and sites["Espace Contention"] == True:
+        site = ""
+    elif sites["Pharmashopi"] == True:
+        site = "/filter/store_id/pharmashopi"
+    elif sites["Espace Contention"] == True:
+        site = "/filter/store_id/contention"
+    return site
 
 #------------------------------------------------------------
 def get_options(prod, infoProd):
@@ -231,7 +245,7 @@ def get_sante(idcommande):
     idcommande : str
         Identification de la commande
     """
-    cmds = get_request(f"api/orders/filter/id/{idcommande}?key={cle_api}")
+    cmds = get_request(f"api/orders/filter/id/{idcommande}")
 
     info_sante = {}
 

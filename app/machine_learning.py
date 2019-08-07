@@ -19,7 +19,6 @@ import app.log
 import app.utilities
 
 logger = app.log.setup_logger(__name__)
-cle_api = app.utilities.get_config_data()['cle_api']
 
 #------------------------------------------------------------
 
@@ -128,7 +127,7 @@ def get_raw_data(cmds):
     i = 1
     for id_cmd in cmds['id_cmd']:
         #print(id_cmd, i)
-        cmd = app.utilities.get_request(f"api/orders/filter/id/{str(id_cmd)}?key={cle_api}")
+        cmd = app.utilities.get_request(f"api/orders/filter/id/{str(id_cmd)}")
 
         for key in cmd:
             cmd = cmd[key]

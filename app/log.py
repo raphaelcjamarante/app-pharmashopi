@@ -4,8 +4,6 @@ import logging
 import os
 import types
 
-import app.utilities
-
 #-------- Logs setup ----------------------------------------
 def new_formatter(self, mode, nbr_newlines=1):
     if mode == "newline":
@@ -31,7 +29,10 @@ def setup_logger(name):
 
     logger.setLevel(logging.DEBUG)
 
-    file_handler = logging.FileHandler(app.utilities.get_path("docs/log.log"))
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(cwd, "../docs/log.log")
+
+    file_handler = logging.FileHandler(path)
     file_handler.setLevel(logging.DEBUG)
     file_formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%Y %H:%M:%S')
     file_handler.setFormatter(file_formatter)

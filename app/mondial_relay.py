@@ -17,7 +17,6 @@ import app.log
 import app.utilities
 
 logger = app.log.setup_logger(__name__)
-cle_api = app.utilities.get_config_data()['cle_api']
 
 # ----------------------------
 
@@ -178,7 +177,7 @@ def setstatus(idcmd, status, tracking_code):
 
     data = [{"id": idcmd, "status": str(status), "shipping": {"tracking_code": tracking_code}}]
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    url = f"http://pharmashopi.com/api/orders?key={cle_api}"
+    url = f"http://pharmashopi.com/api/orders"
     r = requests.put(url, data=json.dumps(data), headers=headers)
  
 # ----------------------------
@@ -222,7 +221,7 @@ def generer_etiquette(idcmd, finaliser, mode_teste):
         private_key = config_data["cle_production"]
 
     try:
-        cmd = app.utilities.get_request(f"api/orders/filter/id/{idcmd}?key={cle_api}")
+        cmd = app.utilities.get_request(f"api/orders/filter/id/{idcmd}")
 
         for key in cmd:
             cmd = cmd[key]

@@ -9,7 +9,6 @@ import app.log
 import app.utilities
 
 logger = app.log.setup_logger(__name__)
-cle_api = app.utilities.get_config_data()['cle_api']
 
 #------------------------------------------------------------
 def surnombre(nbrmedic, produits):
@@ -59,12 +58,12 @@ def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
     break_var = 0
     limit = str(nbrcmds)
 
-    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/desc/limit/1?key={cle_api}")
+    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/desc/limit/1")
 
     for key in cmds:
         derniere_date = cmds[key]["date_created"]
 
-    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}?key={cle_api}")
+    cmds = app.utilities.get_request(f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}")
 
     if not cmds:
         return commandes
@@ -105,7 +104,7 @@ def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
 
             limit = str(nbrcmds - len(commandes))
 
-            url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}?key={cle_api}"
+            url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}"
             cmds = app.utilities.get_request(url_path)
 
         if break_var == 1:

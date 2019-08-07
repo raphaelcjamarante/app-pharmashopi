@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
-                             QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QRadioButton, QSpinBox, 
-                             QStackedWidget, QTabWidget, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
+                             QListWidget, QMessageBox, QPushButton, QSpinBox, QVBoxLayout, QWidget)
 from PyQt5.QtCore import Qt
 
-import app.log
 import app.process
 import app.utilities
-
-logger = app.log.setup_logger(__name__)
 
 #------------------------------------------------------------
 class home(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
-        self.mode_teste = mode_teste
         self.children = []
+        self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
 
@@ -63,7 +59,7 @@ class home(QWidget):
         self.cb_livraison.setEditable(True);
         self.cb_livraison.lineEdit().setReadOnly(True);
         self.cb_livraison.lineEdit().setAlignment(Qt.AlignCenter);
-        self.cb_livraison.addItems(["", "Colissimo", "Mondial Relay", "Lettre suivie"])
+        self.cb_livraison.addItems(["Colissimo", "Mondial Relay", "Lettre suivie"])
         self.cb_livraison.setCurrentIndex(0)
 
         form_params.addRow(label, self.cb_livraison)
@@ -75,6 +71,8 @@ class home(QWidget):
 
         self.sb_nbrcmds = QSpinBox()
         self.sb_nbrcmds.setValue(25)
+        self.sb_nbrcmds.setMinimum(1)
+        self.sb_nbrcmds.setMaximum(100)
 
         form_params.addRow(label, self.sb_nbrcmds)
 
@@ -85,6 +83,8 @@ class home(QWidget):
 
         self.sb_nbrmedic = QSpinBox()
         self.sb_nbrmedic.setValue(30)
+        self.sb_nbrmedic.setMinimum(1)
+        self.sb_nbrmedic.setMaximum(100)
 
         form_params.addRow(label, self.sb_nbrmedic)
 
@@ -152,6 +152,6 @@ class home(QWidget):
         choix = QMessageBox.warning(self, 'Continuer Procedure', msg, QMessageBox.Yes | QMessageBox.No)
         if choix == QMessageBox.Yes:
             sites = {"Pharmashopi": self.cb_site_1.isChecked(), "Espace Contention": self.cb_site_2.isChecked()}
-            nbrjours = 3 #self.parent_widget.tabs.widget(1).sb_nbrjours.value()
+            nbrjours = 3 # not used and set by hand while the back-office limitation persists
             app.process.bonetpick(self.sb_nbrcmds.value(), self.sb_nbrmedic.value(), sites, self.sb_sortie.value(),
                                   self.cb_livraison.currentText(), nbrjours, self.mode_teste)

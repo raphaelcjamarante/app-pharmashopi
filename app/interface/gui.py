@@ -10,7 +10,7 @@ from app.interface import home, detection, labels, config
 import app.utilities
 
 #------------------------------------------------------------
-class main_window(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.children = []
@@ -43,7 +43,7 @@ class main_window(QMainWindow):
         extractAction.triggered.connect(lambda: app.utilities.open_file('README.txt'))
         helpMenu.addAction(extractAction)
         
-        tab_manager = tabs_widget(self.mode_teste)
+        tab_manager = TabsWidget(self.mode_teste)
         self.children.append(tab_manager)
         self.setCentralWidget(tab_manager)
 
@@ -56,7 +56,7 @@ class main_window(QMainWindow):
             sys.exit()
 
 #------------------------------------------------------------
-class tabs_widget(QWidget):
+class TabsWidget(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -65,10 +65,10 @@ class tabs_widget(QWidget):
         layout = QVBoxLayout()
 
         tabs = QTabWidget()
-        tab_home = home.home(self.mode_teste)
-        tab_detection = detection.detection(self.mode_teste)
-        tab_etiquettes = labels.etiquettes(self.mode_teste)
-        tab_config = config.config(self.mode_teste)
+        tab_home = home.Home(self.mode_teste)
+        tab_detection = detection.Detection(self.mode_teste)
+        tab_etiquettes = labels.Etiquettes(self.mode_teste)
+        tab_config = config.Config(self.mode_teste)
         self.children.extend([tab_home, tab_detection, tab_etiquettes, tab_config])
 
         tabs.addTab(tab_home, "Home")
@@ -82,7 +82,7 @@ class tabs_widget(QWidget):
 #------------------------------------------------------------
 def run():
     app = QApplication([])
-    gui = main_window()
+    gui = MainWindow()
     sys.exit(app.exec_())
 
 

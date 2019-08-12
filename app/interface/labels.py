@@ -9,20 +9,20 @@ import app.mondial_relay
 import app.utilities
 
 #------------------------------------------------------------
-class etiquettes(QWidget):
+class Etiquettes(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
         self.mode_teste = mode_teste
 
         main_layout = QVBoxLayout()
-        labels = label_stack(self.mode_teste)
+        labels = LabelStack(self.mode_teste)
         self.children.append(labels)
         main_layout.addWidget(labels)
         self.setLayout(main_layout)
 
 #------------------------------------------------------------
-class label_stack(QWidget):
+class LabelStack(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -47,9 +47,9 @@ class label_stack(QWidget):
 
         # ----------
         
-        stack_mondial = mondial_relay(self.mode_teste)
-        stack_lettre = lettre_suivie(self.mode_teste)
-        stack_colissimo = colissimo(self.mode_teste)
+        stack_mondial = MondialRelay(self.mode_teste)
+        stack_lettre = LettreSuivie(self.mode_teste)
+        stack_colissimo = Colissimo(self.mode_teste)
         
         self.stack = QStackedWidget()
         self.stack.addWidget(stack_mondial)
@@ -77,7 +77,7 @@ class label_stack(QWidget):
         self.stack.setCurrentIndex(i)
 
 #------------------------------------------------------------
-class mondial_relay(QWidget):
+class MondialRelay(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -156,7 +156,7 @@ class mondial_relay(QWidget):
                 self.le.setText("")
 
 #------------------------------------------------------------
-class lettre_suivie(QWidget):
+class LettreSuivie(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -285,7 +285,7 @@ class lettre_suivie(QWidget):
             self.le_lettre.setReadOnly(True)
 
 #------------------------------------------------------------
-class colissimo(QWidget):
+class Colissimo(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []

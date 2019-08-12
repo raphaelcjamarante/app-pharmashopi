@@ -12,6 +12,8 @@ import app.docs
 import app.filters
 import app.log
 import app.machine_learning
+import app.model.batch
+import app.model.commande
 import app.robot
 import app.utilities
 
@@ -32,9 +34,8 @@ def setstatus(idcommande):
     url = f"http://pharmashopi.com/api/orders"
     r = requests.put(url, data=json.dumps(data), headers=headers)
 
-
 #------------------------------------------------------------
-def picking(cmds, sortie, livraison, mode_teste):
+def picking(batch, sortie, mode_teste):
     """ Fait le picking dans le robot
 
     Parameters
@@ -45,156 +46,33 @@ def picking(cmds, sortie, livraison, mode_teste):
         Choisit la sortie du robot
     """
 
-    print("Preparation Picking...")
-    print("******************************************\n")
-
-    totalquantity = 0
-    listeProd = []
-
-    for key in cmds:
-        print(f"Traitement de la commande : {key}")
-        cmd = cmds[key]
-        produits = cmd["products"]
-
-        for key in produits:
-            prod = produits[key]
-            infoProd = {}
-            if str(prod["reference"]) != "":
-                totalquantity += int(str(prod["quantity"]))
-                infoProd["quantity"] = str(prod["quantity"])
-                infoProd["stock"] = app.utilities.quel_stock(prod["id"])
-                infoProd["reference"] = str(app.utilities.get_reference(prod["id"]))
-                infoProd["brand_name"] = unicodedata.normalize('NFD', prod["brand_name"])
-                infoProd["name"] = unicodedata.normalize('NFD', prod["name"])
-                infoProd["options"] = app.utilities.get_options(prod, infoProd)
-                infoProd["price"] = str(round(float(prod["final_price"]), 2))
-                listeProd.append(infoProd)
-
-    print("\n")
-
-    listeProd = sorted(listeProd, key=lambda k: k["brand_name"])
-
-    i = 0
-    while i < (len(listeProd) - 1):
-        if listeProd[i]["reference"] == listeProd[i + 1]["reference"]:
-            listeProd[i]["quantity"] = str(int(listeProd[i]["quantity"]) + int(listeProd[i + 1]["quantity"]))
-            listeProd.pop(i + 1)
-        else:
-            i += 1
-
-    range_cmds = ""
-    ordreCmds = list(cmds.keys())
-    if ordreCmds != []:
-        range_cmds = str (min(ordreCmds)) + "  -->  " + str(max(ordreCmds))
-
-    indexrequette = 1001
     print("Envoi des requetes au robot...")
     print("******************************************\n")
-    for prod in listeProd:
-        if mode_teste:
-            prod["robot_stock"] = '1'
-        else:
-            prod["robot_stock"] = app.robot.robot_stock(prod["reference"])
-        if int(prod["robot_stock"]) < int(prod["quantity"])  :
-            print (f"{prod['reference']} - Requete non envoyée au robot. Il ne reste que {prod['robot_stock']} dans le robot")
-            logger.info(f"Produit {prod['reference']} : stock du robot ({prod['robot_stock']}) est inférieur à la quantité souhaitée ({prod['quantity']})")
+
+    indexrequette = 1001
+
+    prods_info = batch.prods_info
+
+    for key in prods_info:
+        ref = key
+        qte = prods_info[key]['total_qte']
+        robot_stock = prods_info[key]['robot_stock']
+
+        if int(robot_stock) < qte:
+            print (f"{ref} - Requete non envoyée au robot. Il ne reste que {robot_stock} dans le robot")
+            logger.info(f"Produit {ref} : stock du robot ({robot_stock}) est inférieur à la quantité souhaitée ({qte})")
             logger.new_formatter("newline")
         else:
-            print (f"{prod['reference']} - Requete envoiée au robot. Il y'en a {prod['robot_stock']} dans le robot")
-            logger.info(f"Produit {prod['reference']} : stock du robot ({prod['robot_stock']}) est supérieur ou égal à la quantité souhaitée ({prod['quantity']})")
+            print (f"{ref} - Requete envoiée au robot. Il y'en a {robot_stock} dans le robot")
+            logger.info(f"Produit {ref} : stock du robot ({robot_stock}) est supérieur ou égal à la quantité souhaitée ({qte})")
             if not mode_teste:
-                app.robot.retrait(prod["reference"],prod["quantity"],indexrequette,sortie)
-                logger.info(f"Le robot a libéré {prod['quantity']} item(s) de l'article {prod['reference']} ")
+                app.robot.retrait(ref, qte, indexrequette, sortie)
+                indexrequette += 1
+                logger.info(f"Le robot a libéré {qte} item(s) de l'article {ref} ")
             logger.new_formatter("newline")
-            indexrequette += 1
     print("\n")
 
-    logger.info("Picking préparé pour l'écriture")
-    logger.new_formatter("newline")
-
-    app.docs.picking_doc(listeProd, totalquantity, range_cmds, livraison)
-
-    logger.info("Étape Picking finie avec succès")
-    logger.new_formatter("newline")
-
-
-#------------------------------------------------------------
-def bonprep(cmds):
-    """ Fait les bons de commande
-
-    Parameters
-    ----------
-    cmds : dict
-        Dictionnaire de commandes
-    """
-
-    print("Preparation des bons de commande...")
-    print("******************************************\n")
-
-    infoBonprep = {}
-
-    ordreCmds = list(cmds.keys())
-    ordreCmds.sort()
-
-    for idcmd in ordreCmds:
-        print(f"Traitement de la commande : {idcmd}")
-
-        cmd = cmds[idcmd]
-        produits = cmd["products"]
-
-        infoBonprep[idcmd] = {}
-        listeProd = []
-        totalquantity = 0
-        totalht = 0
-        totalttc = 0
-
-        for key in produits:
-            prod = produits[key]
-            infoProd = {}
-
-            infoProd["quantity"] = str(prod["quantity"])
-            infoProd["reference"] = str(app.utilities.get_reference(prod["id"]))
-            infoProd["name"] = unicodedata.normalize('NFD', prod["name"])
-            infoProd["brand_name"] = unicodedata.normalize('NFD', prod["brand_name"])
-            infoProd["options"] = app.utilities.get_options(prod, infoProd)
-            infoProd["weight"] = ""
-
-            if (str(prod["reference"]) != ""):
-                totalquantity += int(str(prod["quantity"]))
-                infoProd["weight"] = str(prod["weight"])[:5] + "kg"
-
-            ht = float(prod["final_price"])
-            tax_rate = float(prod["tax_rate"])
-            final_price = ht + (ht * tax_rate / 100)
-
-            infoProd["ht"] = str(round(ht, 2))
-            infoProd["final_price"] = str(round(final_price, 2))
-
-            totalht += ht * int(infoProd["quantity"])
-            totalttc += final_price * int(infoProd["quantity"])
-                    
-            listeProd.append(infoProd)
-
-        listeProd = sorted(listeProd, key=lambda k: k["brand_name"])
-
-        for i in range(len(listeProd)):
-            if listeProd[i]["brand_name"] != "":
-                break
-        listeProd = listeProd[i:] + listeProd[:i]
-
-        infoBonprep[str(idcmd)]["list_prod"] = listeProd
-        infoBonprep[str(idcmd)]["total_quantity"] = str(totalquantity)
-        infoBonprep[str(idcmd)]["totalht"] = str(round(totalht, 2))
-        infoBonprep[str(idcmd)]["totalttc"] = str(round(totalttc, 2))
-
-    print("\n")
-
-    logger.info("Bons de commande préparés pour l'écriture")
-    logger.new_formatter("newline")
-
-    app.docs.bonprep_doc(cmds, infoBonprep)
-
-    logger.info("Étape BonCommande finie avec succès")
+    logger.info("Étape Picking Robot finie avec succès")
     logger.new_formatter("newline")
 
 
@@ -368,15 +246,17 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
                 logger.info(f"Commandes selectionnées par les filtres : {list(cmds.keys())}")
                 logger.new_formatter(mode="newline")
 
-                picking(cmds, sortie, livraison, mode_teste)
-                bonprep(cmds)
+                batch = app.model.batch.Batch(cmds, mode_teste)
+                picking(batch, sortie, mode_teste)
+                app.docs.picking_doc(batch, livraison)
+                app.docs.bonprep_doc(batch.cmds)
                 print("Fichiers prets a imprimer\n")
 
-                ordreCmds = list(cmds.keys())
-                ordreCmds.sort()
+                ordre_cmds = list(cmds.keys())
+                ordre_cmds.sort()
 
                 if not mode_teste:
-                    for key in cmds:
+                    for key in ordre_cmds:
                         setstatus(key)
                         print(f"La commande {key} a changée de status")
                         logger.info(f"Status de la commande {key} : {app.utilities.get_status(key)}")

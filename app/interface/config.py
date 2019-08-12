@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 import app.utilities
 
 #------------------------------------------------------------
-class config(QWidget):
+class Config(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.mode_teste = mode_teste

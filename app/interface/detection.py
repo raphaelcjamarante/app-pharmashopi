@@ -12,7 +12,7 @@ import app.utilities
 import pandas as pd
 
 #------------------------------------------------------------
-class detection(QWidget):
+class Detection(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -51,9 +51,9 @@ class detection(QWidget):
         label.setText("Nombre de commandes souhaité pour la détection : ")
 
         self.sb_nbrcmds = QSpinBox()
-        self.sb_nbrcmds.setValue(100)
         self.sb_nbrcmds.setMinimum(1)
         self.sb_nbrcmds.setMaximum(1000)
+        self.sb_nbrcmds.setValue(100)
         
         form_params.addRow(label, self.sb_nbrcmds)
 
@@ -63,9 +63,9 @@ class detection(QWidget):
         label.setText("Nombre de jours pour examiner des commandes multiples : ")
 
         self.sb_nbrjours = QSpinBox()
-        self.sb_nbrjours.setValue(3)
         self.sb_nbrjours.setMinimum(1)
         self.sb_nbrjours.setMaximum(5)
+        self.sb_nbrjours.setValue(3)
         
         form_params.addRow(label, self.sb_nbrjours)
 
@@ -155,7 +155,7 @@ class detection(QWidget):
 
     # --------------------------
     def add(self):
-        dialog = dialog_add_prod(self.mode_teste)
+        dialog = DialogAddProd(self.mode_teste)
         self.children.append(dialog)
         result = dialog.exec_()
         if result == QDialog.Accepted:
@@ -203,7 +203,7 @@ class detection(QWidget):
             self.list_depts.addItem(cb_dept)
 
 #------------------------------------------------------------
-class dialog_add_prod(QDialog):
+class DialogAddProd(QDialog):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []

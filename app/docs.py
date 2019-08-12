@@ -133,17 +133,12 @@ def cell_format(workbook, mode):
 
 
 #------------------------------------------------------------
-def picking_doc(listeProd, totalquantity, range_cmds, livraison):
+def picking_doc(batch, livraison):
     """ Fait la documentation du picking
 
     Parameters
     ----------
-    listeProd : list
-        Liste de dictionnaires de chaque produit
-    totalquantity : int
-        Quantité totale de articles dans toutes les commandes d'un batch
-    range_cmds : str
-        String avec les nombres de la premiere et de la derniere commande
+
     """
 
     try:
@@ -182,8 +177,8 @@ def picking_doc(listeProd, totalquantity, range_cmds, livraison):
     worksheet.write(2, 5, now.strftime("%A %d %b %Y"), cf["4"])
     worksheet.write(3, 5, f"Heure : {now.strftime('%H:%M:%S')}", cf["4"])
     worksheet.write(4, 5, "Bon de preparations : ", cf["4"])
-    worksheet.write(5, 5, range_cmds, cf["3"])
-    worksheet.write(6, 5, f"{str(totalquantity)} produits", cf["3"])
+    worksheet.write(5, 5, batch.get_range(), cf["3"])
+    worksheet.write(6, 5, f"{batch.get_total_quantity()} produits", cf["3"])
 
     worksheet.write(8, 1, 'Qte', cf["3"])
     worksheet.write(8, 2, 'Stock', cf["3"])
@@ -196,22 +191,27 @@ def picking_doc(listeProd, totalquantity, range_cmds, livraison):
     row = 10
     col = 0
 
-    for prod in listeProd:
-        if int(prod["robot_stock"]) < int(prod["quantity"])  :
-            worksheet.write(row, col, prod["robot_stock"], cf["2"])
-            worksheet.write(row, col + 1, prod["quantity"], cf["6"])
-            worksheet.write(row, col + 3, prod["reference"], cf["3"])
-            worksheet.write(row, col + 5, prod["name"], cf["2"])
-        else:
-            worksheet.write(row, col, prod["robot_stock"], cf["2bis"])
-            worksheet.write(row, col + 1, prod["quantity"], cf["6bis"])
-            worksheet.write(row, col + 3, prod["reference"], cf["3bis"])
-            worksheet.write(row, col + 5, prod["name"], cf["2bis"])
+    for key in batch.prods_info:
+        prod = batch.prods_info[key]['product']
+        qte = batch.prods_info[key]['total_qte']
+        robot_stock = batch.prods_info[key]['robot_stock']
+        ref = key
 
-        worksheet.write_string(row, col + 2, prod["stock"], cf["2"])
-        worksheet.write(row, col + 4, prod["brand_name"], cf["2"])
-        worksheet.write(row, col + 6, prod["options"], cf["7"])
-        worksheet.write(row, col + 7, prod["price"], cf["2"])
+        if int(robot_stock) < qte:
+            worksheet.write(row, col, robot_stock, cf["2"])
+            worksheet.write(row, col + 1, qte, cf["6"])
+            worksheet.write(row, col + 3, ref, cf["3"])
+            worksheet.write(row, col + 5, prod.name, cf["2"])
+        else:
+            worksheet.write(row, col, robot_stock, cf["2bis"])
+            worksheet.write(row, col + 1, qte, cf["6bis"])
+            worksheet.write(row, col + 3, ref, cf["3bis"])
+            worksheet.write(row, col + 5, prod.name, cf["2bis"])
+
+        worksheet.write_string(row, col + 2, prod.get_stocks(), cf["2"])
+        worksheet.write(row, col + 4, prod.brand_name, cf["2"])
+        worksheet.write(row, col + 6, prod.get_options(), cf["7"])
+        worksheet.write(row, col + 7, round(prod.final_price, 2), cf["2"])
         row += 1
 
     workbook.close()
@@ -221,15 +221,13 @@ def picking_doc(listeProd, totalquantity, range_cmds, livraison):
 
 
 #------------------------------------------------------------
-def bonprep_doc(cmds, infoBonprep):
+def bonprep_doc(cmds):
     """ Fait la documentation des bons de preparation
 
     Parameters
     ----------
     cmds : dict
         Dictionnaire de commandes complet
-    infoBonprep : dict
-        Dictionnaire avec les info pour les bons de preparation
     """
 
     try:
@@ -249,19 +247,15 @@ def bonprep_doc(cmds, infoBonprep):
 
     ean_index = 0
 
-    ordreCmds = list(infoBonprep.keys())
-    ordreCmds.sort()
+    list_cmds = list(cmds.values())
+    list_cmds = sorted(list_cmds, key=lambda k: k.id)
 
-    for idcmd in ordreCmds:
-        cmd = cmds[idcmd]
-        infoClient = cmd["customer_info"]
-        livraison = cmd["delivery_address"]
-        payement = cmd["payment"]["method_name"]
-        date = cmd["date_created"][2:4] + cmd["date_created"][5:7] + cmd["date_created"][8:10]
-        strdate = f"{cmd['date_created'][8:10]} - {cmd['date_created'][5:7]} - {cmd['date_created'][0:4]}"
+    for cmd in list_cmds:
+        date = cmd.get_date_created(mode='barcode')
+        strdate = cmd.get_date_created(mode='string')
 
         EAN = barcode.get_barcode_class('ean13')
-        ean = EAN(str(idcmd) + date, writer=ImageWriter())
+        ean = EAN(str(cmd.id) + date, writer=ImageWriter())
         path = app.utilities.get_path("docs/barcodes/ean13" + str(ean_index))
         filename = ean.save(path)
 
@@ -283,32 +277,19 @@ def bonprep_doc(cmds, infoBonprep):
         worksheet.insert_image('G2', path, {'x_scale': 0.25, 'y_scale': 0.25})
         ean_index += 1
 
-        worksheet.merge_range('A7:C8', 'Commande : ' + str(idcmd), cf["9"])
-        worksheet.merge_range('A9:C9', 'Numero client : ' + str(infoClient["id"]), cf["3"])
+        worksheet.merge_range('A7:C8', 'Commande : ' + cmd.id, cf["9"])
+        worksheet.merge_range('A9:C9', 'Numero client : ' + cmd.customer.id, cf["3"])
         worksheet.merge_range('A10:C10', 'Date : ' + strdate, cf["3"])
-        worksheet.merge_range('A11:C12', str(unicodedata.normalize('NFD', payement)), cf["3"])
-        worksheet.merge_range('A13:C14', infoBonprep[idcmd]["total_quantity"] + " articles", cf["9"])
+        worksheet.merge_range('A11:C12', cmd.payment.method_name, cf["3"])
+        worksheet.merge_range('A13:C14', str(cmd.get_total_quantity()) + " articles", cf["9"])
 
         worksheet.merge_range('F7:I7', "Adresse de livraison: ", cf["3"])
-        name = unicodedata.normalize('NFD', infoClient["name"]) + '\n'
-        company = unicodedata.normalize('NFD', livraison["company"]) + '\n'
-        if livraison["name"] != infoClient["name"]:
-            company = unicodedata.normalize('NFD', livraison["name"]) + '\n'
-        street = unicodedata.normalize('NFD', livraison["street_address"]) + '\n'
-        city = unicodedata.normalize('NFD', livraison["city"]) + ", "
-        postcode = unicodedata.normalize('NFD', livraison["postcode"]) + '\n'
-        country = unicodedata.normalize('NFD', livraison["country"]) + '\n'
-        telephone = unicodedata.normalize('NFD', livraison["phone"]) +'\n'
-        if telephone == "\n":
-            telephone = unicodedata.normalize('NFD', infoClient["phone"]) +'\n'
-        email = str(unicodedata.normalize('NFD', infoClient["email"]))
-        chaineadresse = name + company + street + city + postcode + country + telephone + email
-        worksheet.merge_range('F8:I14', chaineadresse, cf["4"])
+        worksheet.merge_range('F8:I14', cmd.delivery_address.get_complete_address(), cf["4"])
 
         row = 16
-        info_sante = app.utilities.get_sante(idcmd)
-        for key in info_sante:
-            worksheet.merge_range(f"A{str(row)}:I{str(row)}", unicodedata.normalize('NFD', info_sante[key]), cf["11"])
+        info_sante = cmd.get_sante()
+        for item in info_sante:
+            worksheet.merge_range(f"A{str(row)}:I{str(row)}", item, cf["11"])
             row += 1
 
         row += 1
@@ -325,30 +306,29 @@ def bonprep_doc(cmds, infoBonprep):
         row += 1
         col = 0
 
-        listeProd = infoBonprep[idcmd]["list_prod"]
+        list_prods = list(cmd.products.values())
+        list_prods = sorted(list_prods, key=lambda k: k.brand_name)
+        list_prods.append(list_prods.pop(0)) # delivery 'product' is last
 
-        for prod in listeProd:
-            if (prod["reference"] != ""):
-                worksheet.write(row, col, prod["quantity"], cf["6"])
+        for prod in list_prods:
+            worksheet.write(row, col, prod.quantity, cf["6"])
             worksheet.write(row, col + 1,  " ", cf["2"])
-            worksheet.write(row, col + 2, prod["reference"], cf["3"])
-            worksheet.write(row, col + 3, prod["brand_name"], cf["2"])
-            worksheet.write(row, col + 4, prod["name"], cf["2"])
-            worksheet.write(row, col + 5, prod["options"], cf["7"])
-            worksheet.write(row, col + 6, prod["weight"], cf["2"])
-            worksheet.write(row, col + 7, prod["ht"], cf["2"])
-            worksheet.write(row, col + 8, str(round(float(prod["final_price"]) * int(prod["quantity"]), 2)), cf["2"])
+            worksheet.write(row, col + 2, prod.get_best_reference(), cf["3"])
+            worksheet.write(row, col + 3, prod.brand_name, cf["2"])
+            worksheet.write(row, col + 4, prod.name, cf["2"])
+            worksheet.write(row, col + 5, prod.get_options(), cf["7"])
+            worksheet.write(row, col + 6, str(round(prod.weight, 3)) + 'kg', cf["2"])
+            worksheet.write(row, col + 7, round(prod.final_price, 2), cf["2"])
+            worksheet.write(row, col + 8, round(prod.taxed_price * prod.quantity, 2), cf["2"])
             row += 1
-
-        totalht = infoBonprep[idcmd]["totalht"]
-        totalttc = infoBonprep[idcmd]["totalttc"]
-        worksheet.write(row + 2, 7, totalht, cf["total"])
-        worksheet.write(row + 4, 7, totalttc, cf["total"])
-        worksheet.write(row + 3, 7, str(round(float(totalttc) - float(totalht), 2)), cf["total"])
 
         worksheet.merge_range(f"F{str(row + 3)}:G{str(row + 3)}", "Total HT: ", cf["3"])
         worksheet.merge_range(f"F{str(row + 4)}:G{str(row + 4)}", "TVA: ", cf["3"])
         worksheet.merge_range(f"F{str(row + 5)}:G{str(row + 5)}", "Total TTC: ", cf["3"])
+
+        worksheet.write(row + 2, 7, round(cmd.totalht, 2), cf["total"])
+        worksheet.write(row + 4, 7, round(cmd.totalttc, 2), cf["total"])
+        worksheet.write(row + 3, 7, round(cmd.totalttc - cmd.totalht, 2), cf["total"])
     
     workbook.close()
 

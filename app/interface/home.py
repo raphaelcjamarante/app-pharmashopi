@@ -8,7 +8,7 @@ import app.process
 import app.utilities
 
 #------------------------------------------------------------
-class home(QWidget):
+class Home(QWidget):
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -70,9 +70,9 @@ class home(QWidget):
         label.setText("Nombre de commandes à imprimer : ")
 
         self.sb_nbrcmds = QSpinBox()
-        self.sb_nbrcmds.setValue(25)
         self.sb_nbrcmds.setMinimum(1)
         self.sb_nbrcmds.setMaximum(100)
+        self.sb_nbrcmds.setValue(25)
 
         form_params.addRow(label, self.sb_nbrcmds)
 
@@ -82,9 +82,9 @@ class home(QWidget):
         label.setText("Nombre maximal de produits par commande : ")
 
         self.sb_nbrmedic = QSpinBox()
-        self.sb_nbrmedic.setValue(30)
         self.sb_nbrmedic.setMinimum(1)
         self.sb_nbrmedic.setMaximum(100)
+        self.sb_nbrmedic.setValue(30)
 
         form_params.addRow(label, self.sb_nbrmedic)
 
@@ -94,9 +94,9 @@ class home(QWidget):
         label.setText("Sortie robot : ")
 
         self.sb_sortie = QSpinBox()
-        self.sb_sortie.setValue(3)
         self.sb_sortie.setMinimum(1)
         self.sb_sortie.setMaximum(5)
+        self.sb_sortie.setValue(3)
 
         form_params.addRow(label, self.sb_sortie)
 

@@ -1,16 +1,30 @@
 # -*- coding: utf-8 -*-
 
+from app.interface import picking, detection, labels, config
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QListWidget, QMainWindow, 
                              QMessageBox, QTabWidget, QVBoxLayout, QWidget)
-from PyQt5.QtGui import QIcon
-
+import app.utilities
 import sys
 
-from app.interface import home, detection, labels, config
-import app.utilities
+# ------------------------------------------------------------
 
-#------------------------------------------------------------
 class MainWindow(QMainWindow):
+    """Main window of the application
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+
+    Methods
+    -------
+    fermer_app(self)
+        Closes the app correctly
+    """
+
     def __init__(self):
         super().__init__()
         self.children = []
@@ -50,13 +64,26 @@ class MainWindow(QMainWindow):
         self.show()
 
     # ----------- Actions ---------------------
+
     def fermer_app(self):
         choix = QMessageBox.question(self, 'Fermer', "Sortir de l'application?", QMessageBox.Yes | QMessageBox.No)
         if choix == QMessageBox.Yes:
             sys.exit()
 
-#------------------------------------------------------------
+
+# ------------------------------------------------------------
+
 class TabsWidget(QWidget):
+    """Tabs manager
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -65,13 +92,13 @@ class TabsWidget(QWidget):
         layout = QVBoxLayout()
 
         tabs = QTabWidget()
-        tab_home = home.Home(self.mode_teste)
+        tab_home = picking.Picking(self.mode_teste)
         tab_detection = detection.Detection(self.mode_teste)
         tab_etiquettes = labels.Etiquettes(self.mode_teste)
         tab_config = config.Config(self.mode_teste)
         self.children.extend([tab_home, tab_detection, tab_etiquettes, tab_config])
 
-        tabs.addTab(tab_home, "Home")
+        tabs.addTab(tab_home, "Picking")
         tabs.addTab(tab_detection, "Détection d'Arnaque")
         tabs.addTab(tab_etiquettes, "Etiquettes")
         tabs.addTab(tab_config, "Configurations")
@@ -79,7 +106,9 @@ class TabsWidget(QWidget):
         layout.addWidget(tabs)
         self.setLayout(layout)
 
-#------------------------------------------------------------
+
+# ------------------------------------------------------------
+
 def run():
     app = QApplication([])
     gui = MainWindow()

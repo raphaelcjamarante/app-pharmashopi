@@ -249,8 +249,8 @@ def generer_etiquette(idcmd, finaliser, mode_teste):
                 file.write(response.content)
                 file.close()
 
-                if not mode_teste : 
-                    add_to_list(idcmd, exp_nbr)
+                #if not mode_teste : 
+                add_to_list(idcmd, exp_nbr)
 
                 if (finaliser == 1) and not mode_teste:
                     setstatus(cmd['id'], '3', exp_nbr)
@@ -291,5 +291,29 @@ def generer_etiquette(idcmd, finaliser, mode_teste):
         return
 
 
+# ----------------------------
+def generate_recap():
+    date = datetime.datetime.today()
+    file_name = 'recap_' + date.strftime('%d-%b-%Y')
 
+    path = app.utilities.get_path(f'docs/tracking_mondial_relay/{file_name}.csv')
+    if os.path.exists(path):
+        df = pd.read_csv(path, index_col=0, sep=';', dtype={'NumeroColis': str})
 
+        path = app.utilities.get_path(f'docs/recap_mondial_relay/{file_name}.txt')
+        f_recap = open(path, 'w')
+
+        f_recap.write(f"Date de la collecte Mondial Relay : {date.strftime('%d-%b-%Y')}\n\n")
+        f_recap.write("Expediteur : GATPHARM\n")
+        f_recap.write("             7bis Rue Emile Blanc\n")
+        f_recap.write("             38420 - Domene\n\n")
+        f_recap.write("Numero de Compte : 826566 (Toopost)\n")
+        f_recap.write(f"Numero de Colis : {len(df.index)}\n\n")
+        f_recap.write(f"{df}")
+
+        f_recap.close()
+
+        print("Le recap a bien été générée")
+
+    else:
+        print(f"Fichier de tracking du jour {date.strftime('%d-%b-%Y')} n'existe pas")

@@ -3,6 +3,9 @@
 import unicodedata
 
 class Shipping():
+    """Represents the shipping associated with an order
+    """
+
     def __init__(self, shipping):
         self.tracking_code = shipping['tracking_code']
         self.tracking_url = shipping['tracking_url']
@@ -15,6 +18,28 @@ class Shipping():
 # --------------------------------------------
 
 class DeliveryAddress():
+    """Represents the delivery address associated with an order
+    
+    Attributes
+    ----------
+    gender : str
+    name : str
+    company : str
+        Business location of the delivery
+    phone : str
+        Phone, either of the delivery address or the customer
+    street : str
+    city : str
+    postcode : str
+    country : str
+    country_code : str
+
+    Methods
+    -------
+    get_complete_address(self)
+        Gets the complete address string
+    """
+
     def __init__(self, delivery, customer):
         self.gender = delivery['gender']
         self.name = unicodedata.normalize('NFD', customer.name)
@@ -25,14 +50,12 @@ class DeliveryAddress():
         else:
             self.company = unicodedata.normalize('NFD', delivery['company'])
 
-        # unregistered phone at delivery
         if delivery['phone'] == '':
             self.phone = customer.phone
         else:
             self.phone = delivery['phone']
 
         self.street = unicodedata.normalize('NFD', delivery['street_address'])
-        self.suburb = unicodedata.normalize('NFD', delivery['suburb'])
         self.city = unicodedata.normalize('NFD', delivery['city'])
         self.postcode = delivery['postcode']
         self.country = unicodedata.normalize('NFD', delivery['country'])

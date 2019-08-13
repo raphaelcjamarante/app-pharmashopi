@@ -1,18 +1,56 @@
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
                              QLineEdit, QListWidget, QListWidgetItem, QMessageBox, QProgressBar, QPushButton, 
                              QSpinBox, QVBoxLayout, QWidget)
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-
 import app.process
 import app.utilities
-
 import pandas as pd
 
-#------------------------------------------------------------
+# ------------------------------------------------------------
+
 class Detection(QWidget):
+    """Scam detection tab
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    cb_site_1 : QCheckBox
+        Selection of site to make the requests (pharmashopi)
+    cb_site_2 : QCheckBox
+        Selection of site to make the requests (espace contention)
+    sb_nbrcmds : QSpinBox
+        Selection of number of orders
+    sb_nbrjours : QSpinBox
+        Selection of minimum number of days that make multiple orders by one client suspicious
+    list_depts : QListWidget
+        Selection of french departments considered risky
+    list_prods : QListWidget
+        Selection of products considered risky
+
+    Methods
+    -------
+    demarrer_detection(self)
+        Initializes only the detection process
+    save(self)
+        Saves to file the changes in the risky departments
+    cancel(self)
+        Cancels changes to the risky departments, restoring the default
+    add(self)
+        Adds product to list of risky product
+    delete(self)
+        Deletes product from list of risky product
+    make_list_prods(self)
+        Reads file and creates list of risky product
+    make_list_depts(self)
+        Reads file and creates list of risky departments
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -126,7 +164,6 @@ class Detection(QWidget):
         hbox.addWidget(gb_prods)
         main_layout.addLayout(hbox)
 
-
         # ----------
 
         self.setLayout(main_layout)
@@ -140,6 +177,7 @@ class Detection(QWidget):
             app.process.detection_arnaque(self.sb_nbrcmds.value(), sites, self.sb_nbrjours.value(), self.mode_teste)
 
     # --------------------------
+
     def save(self):
         path = app.utilities.get_path("docs/arnaque/depts_risque.csv")
         depts_risque = pd.read_csv(path, index_col='code')
@@ -150,10 +188,12 @@ class Detection(QWidget):
         depts_risque.to_csv(path)
 
     # --------------------------
+
     def cancel(self):
         self.make_list_depts()
 
     # --------------------------
+
     def add(self):
         dialog = DialogAddProd(self.mode_teste)
         self.children.append(dialog)
@@ -168,6 +208,7 @@ class Detection(QWidget):
             self.make_list_prods()
 
     # --------------------------
+
     def delete(self):
         prod = self.list_prods.selectedItems()
         if prod:
@@ -184,6 +225,7 @@ class Detection(QWidget):
             QMessageBox.information(self, 'Delete Product', "Aucun produit selectionné", QMessageBox.Ok)
 
     # --------------------------
+
     def make_list_prods(self):
         self.list_prods.clear()
         path = app.utilities.get_path("docs/arnaque/prods_risque.csv")
@@ -192,6 +234,7 @@ class Detection(QWidget):
             self.list_prods.addItem(f"{str(id_prod)} - {str(marque)} - {str(nom)}")
 
     # --------------------------
+
     def make_list_depts(self):
         self.list_depts.clear()
         path = app.utilities.get_path("docs/arnaque/depts_risque.csv")
@@ -202,8 +245,33 @@ class Detection(QWidget):
             cb_dept.setText(f"{str(index)} - {str(dept)}")
             self.list_depts.addItem(cb_dept)
 
-#------------------------------------------------------------
+
+# ------------------------------------------------------------
+
 class DialogAddProd(QDialog):
+    """Dialog to add new product to list
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    id_prod : QLineEdit
+        Id of product to be added
+    marque_prod : QLineEdit
+        Brand of product to be added
+    nom_prod : QLineEdit
+        Name of product to be added
+
+    Methods
+    -------
+    accept(self)
+        Verifies parameters before adding to list
+    get_inputs(self)
+        Extracts input info of the new product
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -231,6 +299,7 @@ class DialogAddProd(QDialog):
         self.setLayout(layout)
 
     # ----------- Actions ---------------------
+
     def accept(self):
         if (self.id_prod.text() != "") and (self.marque_prod.text() != "") and (self.nom_prod.text() != ""):
             prods = app.utilities.get_request(f"api/products/filter/id/{self.id_prod.text()}")
@@ -241,6 +310,8 @@ class DialogAddProd(QDialog):
                 QMessageBox.critical(self, 'Error', "Id invalide", QMessageBox.Ok)
         else:
             QMessageBox.critical(self, 'Error', "Paramètres Invalides", QMessageBox.Ok)
+
+    # --------------------------
 
     def get_inputs(self):
         return {"id": self.id_prod.text(), "brand_name": self.marque_prod.text(), "name": self.nom_prod.text()}

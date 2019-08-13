@@ -1,13 +1,48 @@
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, 
                              QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout, QWidget)
-from PyQt5.QtCore import Qt
-
 import app.utilities
 
-#------------------------------------------------------------
+# ------------------------------------------------------------
+
 class Config(QWidget):
+    """Configurations tab
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    config_data : dict
+        Configuration data
+    le_cle_api : QLineEdit
+        API key
+    le_ip_robot : QLineEdit
+        Robot IP address
+    le_x : QLineEdit
+        (Nothing yet. Included just so widgets layout is not deformed)
+    list_detection : QListWidget
+        List of parameters that will be used in the scam detection
+    le_ens_prod : QLineEdit
+        Mondial Relay production mode identification
+    le_cle_prod : QLineEdit
+        Mondial Relay production mode password
+    le_ens_test : QLineEdit
+        Mondial Relay  testing mode identification
+    le_cle_test : QLineEdit
+        Mondial Relay testing mode password
+
+    Methods
+    -------
+    save_config(self)
+        Saves all changes in the configuration in a file
+    reset_log(self)
+        Resests the log file
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.mode_teste = mode_teste
@@ -144,6 +179,7 @@ class Config(QWidget):
         self.setLayout(main_layout)
 
     # ----------- Actions ---------------------
+
     def save_config(self):
         config_data = {}
 
@@ -169,6 +205,7 @@ class Config(QWidget):
         df.to_csv(app.utilities.get_path("docs/config_data.csv"))
 
     # --------------------------
+
     def reset_log(self):
         choix = QMessageBox.question(self, 'Vider Log', "Voulez-vous vider le log?", QMessageBox.Yes | QMessageBox.No)
         if choix == QMessageBox.Yes:

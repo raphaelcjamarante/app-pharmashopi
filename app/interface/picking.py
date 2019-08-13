@@ -1,14 +1,45 @@
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, 
                              QListWidget, QMessageBox, QPushButton, QSpinBox, QVBoxLayout, QWidget)
-from PyQt5.QtCore import Qt
-
 import app.process
 import app.utilities
 
 #------------------------------------------------------------
-class Home(QWidget):
+
+class Picking(QWidget):
+    """Picking tab
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    cb_site_1 : QCheckBox
+        Selection of site to make the requests (pharmashopi)
+    cb_site_2 : QCheckBox
+        Selection of site to make the requests (espace contention)
+    cb_livraison : QComboBox
+        Selection of delivery mode
+    sb_nbrcmds : QSpinBox
+        Selection of number of orders
+    sb_nbrmedic : QSpinBox
+        Selection of maximum of a kind of article per order
+    sb_sortie : QSpinBox
+        Selection of the robot output
+
+    Methods
+    -------
+    open_file(self)
+        Opens the documents associated with the picking
+    reset(self)
+        Resets all parameters to the default
+    demarrer_bonetpick(self)
+        Initializes the picking process
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -135,6 +166,7 @@ class Home(QWidget):
         app.utilities.open_file('docs/BonCommande.xlsx')
 
     # --------------------------
+
     def reset(self):
         msg = "Réinitialiser les paramètres par défaut? Les modifications ne seront pas sauvegardées."
         choix = QMessageBox.question(self, 'Reset', msg, QMessageBox.Yes | QMessageBox.No)
@@ -147,6 +179,7 @@ class Home(QWidget):
             self.sb_robot.setValue(3)
             
     # --------------------------
+
     def demarrer_bonetpick(self):
         msg = "Vérifiez que les fichiers Picking et BonCommande sont fermés.\n\nContinuer?"
         choix = QMessageBox.warning(self, 'Continuer Procedure', msg, QMessageBox.Yes | QMessageBox.No)

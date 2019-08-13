@@ -3,6 +3,25 @@
 import app.model.commande
 
 class Batch():
+    """Represents the batch of orders selected for the picking via GUI
+
+    Attributes
+    ----------
+    cmds : dict
+        Dict of Commande objects with their id as key
+    prods_info : dict
+        Dict of dicts with general info on the products {best_reference: {Product object, requested quantity, robot stock}}
+
+    Methods
+    -------
+    get_total_quantity(self)
+        Gets the total quantity of all products in the batch, excluding the delivery method
+    get_range(self)
+        Gets a string with the first and last orders, by id number, in the batch
+    make_products_dict(self, mode_teste)
+        Makes prods_info
+    """
+    
     def __init__(self, cmds, mode_teste):
         self.cmds = {}
         for key in cmds:
@@ -12,8 +31,6 @@ class Batch():
     # ------------------------------------------
 
     def get_total_quantity(self):
-        """ total quantity of products in a batch
-        """
         return sum([self.cmds[key].get_total_quantity() for key in self.cmds])
 
     # ------------------------------------------
@@ -28,13 +45,10 @@ class Batch():
     # ------------------------------------------
 
     def make_products_dict(self, mode_teste):
-        """ dict with product, aggregated quantity if is the same, and robot stock
-        """
-        # excluding delivery 'products'
         list_prods = [self.cmds[k1].products[k2] 
                       for k1 in self.cmds 
                       for k2 in self.cmds[k1].products 
-                      if self.cmds[k1].products[k2].reference != "" ]
+                      if self.cmds[k1].products[k2].reference != ""]
         list_prods = sorted(list_prods, key=lambda k: k.brand_name)
 
         self.prods_info = {}

@@ -1,10 +1,44 @@
 # -*- coding: utf-8 -*-
 
+import app.utilities
 import unicodedata
 
-import app.utilities
-
 class Product():
+    """Represents a product of an order
+    
+    Attributes
+    ----------
+    id : str
+    reference : str
+    stock_reference : str
+    name : str
+    quantity : int
+    final_price : float
+        Price of product
+    tax_rate : float
+    taxed_price : float
+        Price of product with tax rate
+    weight : float
+        Weight of product in kg
+    brand_name : str
+    options : dict of Option objects
+    ean : str
+    stock_total_quantity : str
+    stock : Stock object
+        Stock of the appropriate type of the product, selected via the attribute stock_reference
+
+    Methods
+    -------
+    get_more_info(self, id_prod)
+        Complements the attributes when the product is not the delivery service
+    get_options(self)
+        Get string of options of the product
+    get_stocks(self)
+        Gets string of the distribution of the product in 3 different stocks (local, BIOX, PSL)
+    get_best_reference(self)
+        Gets the best reference to track the right product
+    """
+
     def __init__(self, prod):
         self.id = prod['id']
         self.reference = prod['reference']
@@ -16,7 +50,6 @@ class Product():
         self.tax_rate = float(prod['tax_rate'])
         self.taxed_price = self.final_price + (self.final_price * self.tax_rate / 100)
 
-        self.date_added = prod['date_added']
         self.weight = float(prod['weight'])
         self.brand_name = prod['brand_name']
 
@@ -25,7 +58,6 @@ class Product():
             for key in prod['options']:
                 self.options[key] = Option(prod['options'][key])
 
-        # excludes delivery 'product'
         if self.reference != '':
             self.get_more_info(self.id)
 
@@ -40,11 +72,7 @@ class Product():
         self.ean = prod['ean']
         self.stock_total_quantity = prod['stock_total_quantity']
 
-        #if self.stock_reference in prod['stock']:
-        self.stock = Stock(prod['stock'][self.stock_reference])
-        #else:
-        #    for key in prod['stock']:
-        #        self.stock = Stock(prod['stock'][key])        
+        self.stock = Stock(prod['stock'][self.stock_reference])    
 
     # ------------------------------------------
 
@@ -52,8 +80,6 @@ class Product():
         opt_list = []
         for key in self.options:
             opt_list.append(self.options[key].get_option())
-        #if len(opt_list) == 0:
-        #    return " "
         return '\n'.join(opt_list)
 
     # ------------------------------------------
@@ -77,12 +103,23 @@ class Product():
             return self.reference
 
 
-# --------------------------------------------
+# ----------------------------------------------
 
 class Option():
+    """Represents an option of the product
+
+    Attributes
+    ----------
+    name : str
+    value_name : str
+
+    Methods
+    -------
+    get_option(self)
+        Gets the formatted string of the option
+    """
+
     def __init__(self, option):
-        self.id = option['option_id']
-        self.value_id = option['option_value_id']
         self.name = unicodedata.normalize('NFD', option['option_name'])
         self.value_name = unicodedata.normalize('NFD', option['option_value_name'])
 
@@ -92,10 +129,23 @@ class Option():
         return self.name + " : " + self.value_name
 
 
-
 # --------------------------------------------
 
 class Stock():
+    """Represents a stock of the product
+
+    Attributes
+    ----------
+    reference : str
+    ean : str
+    entries : dict of StockEntry objects
+
+    Methods
+    -------
+    get_stock(self)
+        Gets a dict with the quantity of the product in different stocks
+    """
+
     def __init__(self, stock):
         self.reference = stock['stock_reference']
         self.ean = stock['stock_ean']
@@ -113,11 +163,22 @@ class Stock():
         return stock
 
 
-
-
 # --------------------------------------------
 
 class StockEntry():
+    """Represents an entry of a stock
+
+    Attributes
+    ----------
+    quantity : str
+    supplier_id : str
+
+    Methods
+    -------
+    get_entry(self)
+        Gets the quantity of two specific stocks (BIOX and PSL)
+    """
+
     def __init__(self, entry):
         self.quantity = entry['stock_entry_quantity']
         self.supplier_id = entry['stock_entry_supplier_id']

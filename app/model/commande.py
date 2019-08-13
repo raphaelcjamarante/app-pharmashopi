@@ -1,11 +1,42 @@
 # -*- coding: utf-8 -*-
 
-import unicodedata
-
 import app.model.delivery
 import app.model.product
+import unicodedata
 
 class Commande():
+    """Represents one order from the batch
+
+    Attributes
+    ----------
+    id : str
+    language : str
+    status : str
+    date_created : str
+    shipping : Shipping object
+    payment : Payment object
+    customer : Customer object
+    delivery_address : DeliveryAddress object
+    statuses_history : dict of StatusHistory objects
+    products : dict of Product objects
+        (key is different from id. It is the same as in the request)
+    totalht : float
+        Total cost without tax rate
+    totalttc : float
+        Total cost with tax rate
+
+    Methods
+    -------
+    calculate_cost(self)
+        Calculates the total cost of the order with and without the tax rate
+    get_date_created(self, mode='string')
+        Gets the date of creation in different formats
+    get_sante(self)
+        Gets the health information of the client linked to the order
+    get_total_quantity(self)
+        Gets the total quantity of all products in the order, excluding the delivery method
+    """
+
     def __init__(self, cmd):
         self.id = cmd['id']
         self.language = cmd['language']
@@ -49,7 +80,6 @@ class Commande():
     # ------------------------------------------
 
     def get_sante(self):
-        # gets the most complete health info
         sante = []
         for key in self.statuses_history:
             tmp = self.statuses_history[key].get_sante()
@@ -65,13 +95,15 @@ class Commande():
 # --------------------------------------------
 
 class Customer():
+    """Represents the customer associated with an order
+    """
+
     def __init__(self, info):
         self.id = info['id']
         self.name = unicodedata.normalize('NFD', info['name'])
         self.company = unicodedata.normalize('NFD', info['company'])
         self.city = unicodedata.normalize('NFD', info['city'])
         self.street_address = unicodedata.normalize('NFD', info['street_address'])
-        self.suburb = unicodedata.normalize('NFD', info['suburb'])
         self.postcode = info['postcode']
         self.country = unicodedata.normalize('NFD', info['country'])
         self.phone = info['phone']
@@ -80,6 +112,9 @@ class Customer():
 # --------------------------------------------
 
 class Payment():
+    """Represents the payment with an order
+    """
+
     def __init__(self, payment):
         self.method_name = unicodedata.normalize('NFD', payment['method_name'])
         self.method_code = payment['method_code']
@@ -87,10 +122,20 @@ class Payment():
 # --------------------------------------------
 
 class StatusHistory():
+    """Represents the history associated with an order
+    
+    Attributes
+    ----------
+    status_comments : str
+        String containing the health information of the client
+
+    Methods
+    -------
+    get_sante(self)
+        Gets the parsed content of the health info in a list
+    """
+
     def __init__(self, history):
-        self.status_history_id = history['status_history_id']
-        self.status_id = history['status_id']
-        self.status_date = history['status_date']
         self.status_comments = history['status_comments']
 
     # ------------------------------------------

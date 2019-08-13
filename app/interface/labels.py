@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPushButton, 
                              QRadioButton, QStackedWidget, QVBoxLayout, QWidget)
-from PyQt5.QtCore import Qt
-
 import app.lettre_suivie
 import app.mondial_relay
 import app.utilities
+import datetime
 
-#------------------------------------------------------------
+# ------------------------------------------------------------
+
 class Etiquettes(QWidget):
+    """Label generation tab
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -21,8 +32,27 @@ class Etiquettes(QWidget):
         main_layout.addWidget(labels)
         self.setLayout(main_layout)
 
-#------------------------------------------------------------
+
+# ------------------------------------------------------------
+
 class LabelStack(QWidget):
+    """Manager of the label stack
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    stack : QStackedWidget
+        Stack of widgets of each type of label
+
+    Methods
+    -------
+    display(self, i)
+        Changes currently displayed label widget
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -71,13 +101,38 @@ class LabelStack(QWidget):
         self.setLayout(main_layout)
         stack_options.currentRowChanged.connect(self.display)
 
-        
     # ----------- Actions ---------------------
+
     def display(self, i):
         self.stack.setCurrentIndex(i)
 
-#------------------------------------------------------------
+
+# ------------------------------------------------------------
+
 class MondialRelay(QWidget):
+    """Mondial Relay labeling type widget
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    rb_1 : QRadioButton
+        Selection if order should change status to finished (not currently used)
+    rb_2 : QRadioButton
+        Selection if order should change status to finished (not currently used)
+    le : QLineEdit
+        Input of order barcode
+
+    Methods
+    -------
+    text_changed(self, text)
+        Verifies input to automatically generate label ofter scanning barcode
+    recap(self)
+        Generates and opens recap of the day
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -142,6 +197,12 @@ class MondialRelay(QWidget):
 
         # ----------
 
+        b_recap = QPushButton("Generer Recap du Jour")
+        b_recap.clicked.connect(self.recap)
+        main_layout.addWidget(b_recap)
+
+        # ----------
+
         main_layout.addStretch()
 
         # ----------
@@ -149,14 +210,56 @@ class MondialRelay(QWidget):
         self.setLayout(main_layout)
 
     # ----------- Actions ---------------------
+
     def text_changed(self, text):
         if len(text) == 13:
             if self.rb_1.isChecked() ^ self.rb_2.isChecked():
                 app.mondial_relay.generer_etiquette(text[:6], self.rb_1.isChecked(), self.mode_teste)
                 self.le.setText("")
 
+    # --------------------------
+
+    def recap(self):
+        app.mondial_relay.generate_recap()
+        date = datetime.datetime.today()
+        file_name = 'recap_' + date.strftime('%d-%b-%Y')
+        app.utilities.open_file(f'docs/recap_mondial_relay/{file_name}.txt')
+
+
 #------------------------------------------------------------
+
 class LettreSuivie(QWidget):
+    """Lettre Suivie labeling type widget
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+        Control of testing mode
+    rb_1 : QRadioButton
+        Selection if order should change status to finished (not currently used)
+    rb_2 : QRadioButton
+        Selection if order should change status to finished (not currently used)
+    rb_suivie : QRadioButton
+        Selection of specific mode of Lettre Suivie
+    rb_simple : QRadioButton
+        Selection of specific mode of Lettre Suivie
+    le_lettre :  QLineEdit
+        Input of letter barcode (tracking code)
+    le_commande : QLineEdit
+        Input of order barcode
+
+    Methods
+    -------
+    both_texts_changed(self)
+        Verifies input to automatically generate label ofter scanning barcode and letter
+    rb_suivie_clicked(self, enabled)
+        Changes some configurations if rb_suivie is selected
+    rb_simple_clicked(self, enabled)
+        Changes some configurations if rb_simple is selected
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []
@@ -264,6 +367,7 @@ class LettreSuivie(QWidget):
         self.setLayout(main_layout)
 
     # ----------- Actions ---------------------
+
     def both_texts_changed(self):
         code_cmd = self.le_commande.text()
         code_lettre = self.le_lettre.text()
@@ -274,18 +378,33 @@ class LettreSuivie(QWidget):
                     self.le_lettre.setText("")
                 self.le_commande.setText("")
 
+    # --------------------------
+
     def rb_suivie_clicked(self, enabled):
         if enabled:
             self.le_lettre.clear()
             self.le_lettre.setReadOnly(False)
 
+    # --------------------------
+    
     def rb_simple_clicked(self, enabled):
         if enabled:
             self.le_lettre.setText('Lettre simple')
             self.le_lettre.setReadOnly(True)
 
+
 #------------------------------------------------------------
+
 class Colissimo(QWidget):
+    """Colissimo labeling type widget (not currently used)
+
+    Attributes
+    ----------
+    children : list
+        Widgets created directly under in the 'hierarchy'
+    mode_teste : bool
+    """
+
     def __init__(self, mode_teste):
         super().__init__()
         self.children = []

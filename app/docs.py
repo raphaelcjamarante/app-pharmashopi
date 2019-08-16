@@ -14,7 +14,7 @@ logger = app.log.setup_logger(__name__)
 
 
 #------------------------------------------------------------
-def cell_format(workbook, mode):
+def cell_format(workbook, mode, livraison):
     """ Crée les celules xlsx
 
     Parameters
@@ -97,6 +97,17 @@ def cell_format(workbook, mode):
 
 
     if mode == "bonprep":
+        cell_format = workbook.add_format({'text_wrap': True})
+        cell_format.set_border(7)
+        cell_format.set_align('center')
+        cell_format.set_align('vcenter')
+        if livraison == 'Mondial Relay':
+            color = 'gray'
+        else:
+            color = 'white'
+        cell_format.set_bg_color(color)
+        cells["mondial"] = cell_format
+
         cell_format11 = workbook.add_format({'text_wrap': True})
         cell_format11.set_bold()
         cell_format11.set_border(7)
@@ -154,7 +165,7 @@ def picking_doc(batch, livraison):
 
     workbook = xlsxwriter.Workbook(app.utilities.get_path("docs/Picking.xlsx"))
 
-    cf = cell_format(workbook, "picking")
+    cf = cell_format(workbook, "picking", livraison)
 
     worksheet = workbook.add_worksheet()
     worksheet.set_margins(0.2, 0.2, 0.2, 0.2)
@@ -221,7 +232,7 @@ def picking_doc(batch, livraison):
 
 
 #------------------------------------------------------------
-def bonprep_doc(cmds):
+def bonprep_doc(cmds, livraison):
     """ Fait la documentation des bons de preparation
 
     Parameters
@@ -243,7 +254,7 @@ def bonprep_doc(cmds):
 
     workbook = xlsxwriter.Workbook(app.utilities.get_path("docs/BonCommande.xlsx"))
 
-    cf = cell_format(workbook, "bonprep")
+    cf = cell_format(workbook, "bonprep", livraison)
 
     ean_index = 0
 
@@ -315,7 +326,10 @@ def bonprep_doc(cmds):
             worksheet.write(row, col + 1,  " ", cf["2"])
             worksheet.write(row, col + 2, prod.get_best_reference(), cf["3"])
             worksheet.write(row, col + 3, prod.brand_name, cf["2"])
-            worksheet.write(row, col + 4, prod.name, cf["2"])
+            if livraison in prod.name and livraison == 'Mondial Relay':
+                worksheet.write(row, col + 4, prod.name, cf["mondial"])
+            else:
+                worksheet.write(row, col + 4, prod.name, cf["2"])
             worksheet.write(row, col + 5, prod.get_options(), cf["7"])
             worksheet.write(row, col + 6, str(round(prod.weight, 3)) + 'kg', cf["2"])
             worksheet.write(row, col + 7, round(prod.final_price, 2), cf["2"])

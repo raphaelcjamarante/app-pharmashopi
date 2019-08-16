@@ -102,10 +102,10 @@ def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
                 print(f"{len(commandes)} commandes du type souhaité ont été trouvées\n")
                 break
 
-            limit = str(nbrcmds - len(commandes))
-
-            url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}"
-            cmds = app.utilities.get_request(url_path)
+        # renew cmds
+        limit = str(nbrcmds - len(commandes))
+        url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}"
+        cmds = app.utilities.get_request(url_path)
 
         if break_var == 1:
             break

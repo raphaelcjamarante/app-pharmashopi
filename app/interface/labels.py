@@ -3,8 +3,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPushButton, 
                              QRadioButton, QStackedWidget, QVBoxLayout, QWidget)
-import app.lettre_suivie
-import app.mondial_relay
+import app.labels
 import app.utilities
 import datetime
 
@@ -214,13 +213,13 @@ class MondialRelay(QWidget):
     def text_changed(self, text):
         if len(text) == 13:
             if self.rb_1.isChecked() ^ self.rb_2.isChecked():
-                app.mondial_relay.generer_etiquette(text[:6], self.rb_1.isChecked(), self.mode_teste)
+                app.labels.generer_etiquette(text[:6], self.rb_1.isChecked(), 'Mondial Relay', self.mode_teste)
                 self.le.setText("")
 
     # --------------------------
 
     def recap(self):
-        app.mondial_relay.generate_recap()
+        app.labels.generate_recap()
         date = datetime.datetime.today()
         file_name = 'recap_' + date.strftime('%d-%b-%Y')
         app.utilities.open_file(f'docs/recap_mondial_relay/{file_name}.txt')
@@ -373,7 +372,7 @@ class LettreSuivie(QWidget):
         code_lettre = self.le_lettre.text()
         if (len(code_cmd) == 13) and (len(code_lettre) == 13) :
             if self.rb_1.isChecked() ^ self.rb_2.isChecked():
-                app.lettre_suivie.generer_etiquette(code_cmd[:6], self.rb_1.isChecked(), code_lettre, self.mode_teste)
+                app.labels.generer_etiquette(code_cmd[:6], self.rb_1.isChecked(), 'Lettre suivie', self.mode_teste, code_lettre)
                 if self.rb_suivie.isChecked():
                     self.le_lettre.setText("")
                 self.le_commande.setText("")

@@ -249,7 +249,7 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
                 batch = app.model.batch.Batch(cmds, mode_teste)
                 picking(batch, sortie, mode_teste)
                 app.docs.picking_doc(batch, livraison)
-                app.docs.bonprep_doc(batch.cmds)
+                app.docs.bonprep_doc(batch.cmds, livraison)
                 print("Fichiers prets a imprimer\n")
 
                 ordre_cmds = list(cmds.keys())

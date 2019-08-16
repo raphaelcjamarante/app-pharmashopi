@@ -3,8 +3,7 @@
 import unittest
 
 import app.process
-import app.lettre_suivie
-import app.mondial_relay
+import app.labels
 import app.filters
 
 class TestsUnit(unittest.TestCase):
@@ -38,14 +37,14 @@ class TestsIntegrated(unittest.TestCase):
 
     def test_labels(self):
 
-        idcmd = 338264
+        id_cmd = 338264
 
         # ------- etiquette mondial --------
-        app.mondial_relay.generer_etiquette(idcmd, 0, True)
+        app.labels.generer_etiquette(id_cmd, 0, 'Mondial Relay', True)
 
 
         # ------- etiquette lettre --------
-        app.lettre_suivie.generer_etiquette(idcmd, 0, 123, True)
+        app.labels.generer_etiquette(id_cmd, 0, 'Lettre suivie', True, 123)
 
 #-----------------------------------------------------------
 

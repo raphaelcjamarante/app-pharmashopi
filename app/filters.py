@@ -31,19 +31,18 @@ def surnombre(nbrmedic, produits):
 
 #------------------------------------------------------------
 def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
-    """ Trouve le nombre souhaité de commandes avec le type de livraison souhaité
-    et avec au maximum un nombre maximal d'un certain article
+    """ Trouve le nombre souhaité de commandes selon le type désiré
 
     Parameters
     ----------
-    livraison: str
-        Nom du type de livraison (les principales : Colissimo, Mondial Relay et Lettre suivie)
     nbrcmds : int
         Nombre de commandes à imprimer (choisi via GUI)
     nbrmedic : int
         Nombre maximal d'un article par commande (choisi via GUI)
     site_filter : str
         Selectionne le site souhaité
+    livraison: str
+        Nom du type de livraison (les principales : Colissimo, Mondial Relay et Lettre suivie)
 
     Return
     ------
@@ -102,7 +101,7 @@ def filtrage_picking(nbrcmds, nbrmedic, site_filter, livraison=""):
                 print(f"{len(commandes)} commandes du type souhaité ont été trouvées\n")
                 break
 
-        # renew cmds
+        # renew cmds after loop
         limit = str(nbrcmds - len(commandes))
         url_path = f"api/orders/filter/status/1{site_filter}/filter/orderby/date_created/asc/limit/{limit}/filter/date_created/superior/{date_created}"
         cmds = app.utilities.get_request(url_path)

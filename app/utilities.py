@@ -20,10 +20,16 @@ logger = app.log.setup_logger(__name__)
 
 #------------------------------------------------------------
 def change_mode(self, state, children):
-    """
-    self : gui component
+    """Changes the mode (testing or production) all throughout the program
+
+    Parameters
+    ----------
+    self : 
+        Interface component that called function
     state : bool
-    children : list (of gui components)
+        Set up of the variable 'mode_teste'
+    children : list
+        List of interface components immediately below the caller
     """
     self.mode_teste = state
     for child in children:
@@ -31,8 +37,12 @@ def change_mode(self, state, children):
 
 #------------------------------------------------------------
 def get_path(file):
-    """
-    file : str of relative path starting at root of project
+    """Returns absolute path of file
+
+    Parameters
+    ----------
+    file : str
+        Relative path of file starting from the root of project
     """
     cwd = os.path.abspath(os.path.dirname(__file__))
     root = os.path.join(cwd, "..")
@@ -41,8 +51,12 @@ def get_path(file):
 
 #------------------------------------------------------------
 def open_file(file):
-    """
-    file : str of relative path starting at root of project
+    """Opens file
+
+    Parameters
+    ----------
+    file : str
+        Relative path of file starting from the root of project
     """
     path = get_path(file)
     if os.path.exists(path):
@@ -52,6 +66,8 @@ def open_file(file):
 
 #------------------------------------------------------------
 def get_config_data():
+    """Gets all the configuration data to corretly initialize the program
+    """
 
     path = get_path("docs/config_data.csv")
     config_data = pd.read_csv(path, index_col="parameter")
@@ -63,19 +79,8 @@ def get_config_data():
 
 #------------------------------------------------------------
 
+# Global variable
 cle_api = get_config_data()['cle_api']
-
-#------------------------------------------------------------
-#def output(message, print_statement=True, log_statement=True, type_log='info'):
-#    if message == '\n':
-#        print(message)
-#        logger.new_formatter(mode="newline")
-
-
-#    if print_statement:
-#        print(message)
-
-#    if log_statement:
 
 #------------------------------------------------------------
 def get_request(request):

@@ -44,6 +44,8 @@ def picking(batch, sortie, mode_teste):
         Dictionnaire de commandes
     sortie : 
         Choisit la sortie du robot
+    mode_teste : 
+     Selectionne le mode testing ou le mode production
     """
 
     print("Envoi des requetes au robot...")
@@ -154,7 +156,7 @@ def detection(cmds, nbrjours):
 
 
 #------------------------------------------------------------
-def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
+def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste, mode_detection, id_cmd=None):
     """ Fait juste la detection d'arnaque dans les dernieres commandes choisis, n'importe leurs status
 
     Parameters
@@ -167,6 +169,10 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
         Commandes multiples du même client dans cet intervalle de jours présente un risque
     mode_teste : bool
         (Pas utilisé)
+    mode_detection : str
+        Selectionne mode detection batch ou detection singulaire
+    id_cmd : str
+        Identification de la commande dans le mode singulaire
     """
 
     logger.info(f"Paramètres de la procedure de détection: \n"
@@ -184,7 +190,10 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
             logger.warning("Aucun site n'a été sélectionné")
             logger.new_formatter(mode="newline")
         else:
-            cmds = app.utilities.get_request(f"api/orders{site}/filter/orderby/date_created/desc/limit/{nbrcmds}")
+            if mode_detection == 'batch':
+                cmds = app.utilities.get_request(f"api/orders{site}/filter/orderby/date_created/desc/limit/{nbrcmds}")
+            else:
+                cmds = app.utilities.get_request(f"api/orders/filter/id/{id_cmd}")
             detection(cmds, nbrjours)
         print('Procesus terminé avec succès\n\n')
         logger.info("Procesus terminé avec succès")
@@ -205,7 +214,7 @@ def detection_arnaque(nbrcmds, sites, nbrjours, mode_teste):
 
 #------------------------------------------------------------
 def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste):
-    """ Fait le request et appele picking et bonprep
+    """ Fait le processus picking
 
     Parameters
     ----------
@@ -219,6 +228,10 @@ def bonetpick(nbrcmds, nbrmedic, sites, sortie, livraison, nbrjours, mode_teste)
         Choisit la sortie du robot
     livraison : str
         Filtre le mode de livraison (Colissimo, Mondial Relay et Lettre suivie)
+    nbrjours : int
+        Commandes multiples du même client dans cet intervalle de jours présente un risque (pas utilisé)
+    mode_teste : boolean
+        Selectionne mode teste ou mode production
     """
 
     logger.info(f"Paramètres de la procedure de picking: \n"

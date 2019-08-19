@@ -6,6 +6,15 @@ import types
 
 #-------- Logs setup ----------------------------------------
 def new_formatter(self, mode, nbr_newlines=1):
+    """Definition of 2 new formats, used for aesthetic reasons
+
+    Parameters
+    ----------
+    mode : str
+        Selects the type of the formatter
+    nbr_newlines : int
+        Number of empty lines wanted
+    """
     if mode == "newline":
         for i in range(len(self.handler)):
             self.handler[i].setFormatter(self.blank_formatter)
@@ -25,6 +34,13 @@ def new_formatter(self, mode, nbr_newlines=1):
 
 #------------------------------------------------------------
 def setup_logger(name):
+    """Logger configuration
+
+    Paramters
+    ---------
+    name : str
+        Name of the file on which we create and call the logger
+    """
     logger = logging.getLogger(name)
 
     logger.setLevel(logging.DEBUG)

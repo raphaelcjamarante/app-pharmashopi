@@ -23,6 +23,8 @@ def cell_format(workbook, mode, livraison):
         Fichier xlsx utilisé
     mode : str
         Selectionne le mode : picking ou bonprep
+    livraison : str
+        Selectionne le type de livraison
 
     Return
     ------
@@ -149,7 +151,10 @@ def picking_doc(batch, livraison):
 
     Parameters
     ----------
-
+    batch : Batch
+        Objet avec tous les donnes du batch
+    livraison : str
+        Selectionne le mode de livraison
     """
 
     try:
@@ -237,8 +242,10 @@ def bonprep_doc(cmds, livraison):
 
     Parameters
     ----------
-    cmds : dict
-        Dictionnaire de commandes complet
+    cmds : 
+        Dictionnaire d'objets du type Commande
+    livraison : str
+        Selectionne le mode de livraison
     """
 
     try:

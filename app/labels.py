@@ -21,6 +21,8 @@ logger = app.log.setup_logger(__name__)
 # ----------------------------
 
 def normalize(word):
+    """Transforme la string en un format plus simple
+    """
     word = word.strip()
     word = unicodedata.normalize('NFD', word)
     word = word.encode('ascii', 'ignore')
@@ -29,7 +31,7 @@ def normalize(word):
 # ----------------------------
 
 def get_info_lettre_suivie(cmd):
-    """ Prepare les informations requises pour generer l'etiquette
+    """ Prepare les informations requises pour generer l'etiquette lettre suivie
 
     Parameters
     ----------
@@ -76,6 +78,15 @@ def get_info_lettre_suivie(cmd):
 # ----------------------------
 
 def make_pdf(data, spacing=1):
+    """Génère le pdf de l'etiquette lettre suivie
+
+    Parameters
+    ----------
+    data : dict
+        Dict avec les info pour generer l'etiquette
+    spacing : int
+        Taille entre chaque ligne
+    """
     dimension = [4, 6]
     pdf = FPDF("P", "in", dimension)
     pdf.add_page()
@@ -136,8 +147,8 @@ def generate_security_key(private_key, parameters):
 
 # ----------------------------
 
-def get_info_mondial_relay(cmd, enseigne, private_key):
-    """ Prepare les informations requises pour generer l'etiquette
+def get_info_expedition(cmd, enseigne, private_key):
+    """ Prepare les informations requises pour generer l'expedition Mondial Relay
 
     Parameters
     ----------
@@ -147,6 +158,11 @@ def get_info_mondial_relay(cmd, enseigne, private_key):
         Parametre de securité pour le web service : regarder la documentation
     private_key : str
         Parametre de securité pour le web service : regarder la documentation
+
+    Return
+    ------
+    parameters : dict
+        Dict avec les info necessaires pour appeler la fonction WSI2_CreationExpedition du web service Mondial Relay
     """
 
     parameters = {}
@@ -232,7 +248,25 @@ def get_info_mondial_relay(cmd, enseigne, private_key):
 
 #------------------------------------------------------------
 
-def get_etiquette(enseigne, expeditions, langue, private_key):
+def get_info_etiquette(enseigne, expeditions, langue, private_key):
+    """ Prepare les informations requises pour generer l'etiquette Mondial Relay
+
+    Parameters
+    ----------
+    enseigne : str
+        Parametre de securité pour le web service : regarder la documentation
+    expeditions : str
+        Nombre d'expedition généré par Mondial Relaly
+    langue : str
+        Langue du client
+    private_key : str
+        Parametre de securité pour le web service : regarder la documentation
+
+    Return
+    ------
+    parameters : dict
+        Dict avec les info necessaires pour appeler la fonction WSI3_GetEtiquettes du web service Mondial Relay
+    """
     parameters = {}
     parameters["Enseigne"] = enseigne # Obligatory
     parameters["Expeditions"] = expeditions # Obligatory
@@ -243,12 +277,12 @@ def get_etiquette(enseigne, expeditions, langue, private_key):
 
 # ----------------------------
 
-def setstatus(idcmd, status, tracking_code):
+def setstatus(id_cmd, status, tracking_code):
     """ Change le status d'une commande
 
     Parameters
     ----------
-    idcmd : str
+    id_cmd : str
         Identification de la commande
     status : int
         Nouvel status de la commande
@@ -256,7 +290,7 @@ def setstatus(idcmd, status, tracking_code):
         Code d'expedition Mondial Relay
     """
 
-    data = [{"id": idcmd, "status": str(status), "shipping": {"tracking_code": tracking_code}}]
+    data = [{"id": id_cmd, "status": str(status), "shipping": {"tracking_code": tracking_code}}]
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     url = f"http://pharmashopi.com/api/orders"
     r = requests.put(url, data=json.dumps(data), headers=headers)
@@ -264,6 +298,17 @@ def setstatus(idcmd, status, tracking_code):
 # ----------------------------
 
 def add_to_list(id_cmd, exp_nbr, mode_livraison):
+    """Ajoute la commande dans la liste du jour. Necessaire pour finaliser les commandes à la main
+
+    Parameters
+    ----------
+    id_cmd : str
+        Identification de la commande
+    exp_nbr : str
+        Tracking code
+    mode_livraison : str
+        Mode de livraison
+    """
     if mode_livraison == 'Mondial Relay':
         mode_livraison = 'mondial_relay'
         exp_nbr = str('%08d' %  int(exp_nbr))
@@ -289,6 +334,8 @@ def add_to_list(id_cmd, exp_nbr, mode_livraison):
 # ----------------------------
 
 def lettre_suivie(cmd):
+    """Processus lettre suivie
+    """
     parameters = get_info_lettre_suivie(cmd)
     logger.info(f"Parametres de l'etiquette : {parameters}")
     logger.new_formatter(mode="newline")
@@ -296,17 +343,28 @@ def lettre_suivie(cmd):
 
 # ----------------------------
 
-def mondial_relay_error(id_cmd, request):
+def mondial_relay_error(id_cmd, reponse):
+    """Print le type d'erreur mondial relay
+
+    Parameters
+    ----------
+    id_cmd : str
+        Identification de la commande
+    reponse : dict
+        Dict avec la reponse de la requete
+    """
     path = app.utilities.get_path("docs/MondialRelay/codes_web_service.csv")
     codes = pd.read_csv(path, index_col='Code', sep=';')
     print(f"Etiquette pour la commande {id_cmd} non générée")
     logger.info(f"Etiquette pour la commande {id_cmd} non générée")
-    logger.error(f"Error {request['STAT']} : {codes.iloc[int(request['STAT'])]['Label']}")
+    logger.error(f"Error {reponse['STAT']} : {codes.iloc[int(reponse['STAT'])]['Label']}")
     logger.new_formatter(mode="end_process")
 
 # ----------------------------
 
 def mondial_relay(cmd, mode_teste):
+    """Processus mondial relay
+    """
 
     config_data = app.utilities.get_config_data()
     if mode_teste:
@@ -318,7 +376,7 @@ def mondial_relay(cmd, mode_teste):
 
     wsdl = "http://api.mondialrelay.com/Web_Services.asmx?WSDL"
     client = Client(wsdl)
-    parameters = get_info_mondial_relay(cmd, enseigne, private_key)
+    parameters = get_info_expedition(cmd, enseigne, private_key)
     r_expedition = client.service.WSI2_CreationExpedition(**parameters)
     #r = client.service.WSI2_CreationEtiquette(**parameters_etiquette)
 
@@ -330,7 +388,7 @@ def mondial_relay(cmd, mode_teste):
         raise()
 
     exp_nbr = r_expedition['ExpeditionNum']
-    r_etiquette = client.service.WSI3_GetEtiquettes(**get_etiquette(enseigne, exp_nbr, parameters["Dest_Langage"], private_key))
+    r_etiquette = client.service.WSI3_GetEtiquettes(**get_info_etiquette(enseigne, exp_nbr, parameters["Dest_Langage"], private_key))
 
     if r_etiquette['STAT'] != '0':
         mondial_relay_error(cmd['id'], r_etiquette)
@@ -356,6 +414,14 @@ def generer_etiquette(id_cmd, finaliser, mode_livraison, mode_teste, exp_nbr=Non
     ----------
     id_cmd : str
         Identification de la commande
+    finaliser : boolean
+        Si on doit finaliser ou non la commande (pas active en raison du back-office)
+    mode_livraison : str
+        Selectionne le type d'etiquette selon la livraison
+    mode_teste : boolean
+        Si on est dans le mode de testing ou de production
+    exp_nbr : str
+        Code d'expedition lettre suivie (le code mondial relay est généré, et pas envoyé avant)
     """
 
     try:
@@ -398,6 +464,8 @@ def generer_etiquette(id_cmd, finaliser, mode_livraison, mode_teste, exp_nbr=Non
 # ----------------------------
 
 def generate_recap():
+    """Fait le recap du jour de mondial relay
+    """
     date = datetime.datetime.today()
     file_name_1 = 'recap_' + date.strftime('%d-%b-%Y')
     file_name_2 = 'mondial_relay_' + date.strftime('%d-%b-%Y')

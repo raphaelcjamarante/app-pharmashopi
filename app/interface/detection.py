@@ -59,7 +59,7 @@ class Detection(QWidget):
         main_layout = QVBoxLayout()
 
         button_start = QPushButton("Démarrer")
-        button_start.clicked.connect(self.demarrer_detection)
+        button_start.clicked.connect(lambda: self.demarrer_detection('batch'))
         main_layout.addWidget(button_start)
 
         #self.progress = QProgressBar(self)
@@ -166,15 +166,40 @@ class Detection(QWidget):
 
         # ----------
 
+        form_single_detection = QFormLayout()
+
+        label = QLabel()
+        label.setText("Id Commande : ")
+        self.le_id_cmd = QLineEdit()
+        form_single_detection.addRow(label, self.le_id_cmd)
+
+        button_start_single = QPushButton("Démarrer")
+        button_start_single.clicked.connect(lambda: self.demarrer_detection('single'))
+
+        hbox = QHBoxLayout()
+        hbox.addLayout(form_single_detection)
+        hbox.addWidget(button_start_single)
+
+        gb_single_detection = QGroupBox("Detection Singulaire")
+        gb_single_detection.setLayout(hbox)
+        main_layout.addWidget(gb_single_detection)
+
+        # ----------
+
         self.setLayout(main_layout)
 
     # ----------- Actions ---------------------
 
-    def demarrer_detection(self):
+    def demarrer_detection(self, mode_detection):
         choix = QMessageBox.question(self, 'Continuer Procedure', "Continuer?", QMessageBox.Yes | QMessageBox.No)
         if choix == QMessageBox.Yes:
             sites = {"Pharmashopi": self.cb_site_1.isChecked(), "Espace Contention": self.cb_site_2.isChecked()}
-            app.process.detection_arnaque(self.sb_nbrcmds.value(), sites, self.sb_nbrjours.value(), self.mode_teste)
+            if mode_detection == 'batch':
+                app.process.detection_arnaque(self.sb_nbrcmds.value(), sites, self.sb_nbrjours.value(), 
+                                              self.mode_teste, mode_detection)
+            else:
+                app.process.detection_arnaque(self.sb_nbrcmds.value(), sites, self.sb_nbrjours.value(), 
+                                              self.mode_teste, mode_detection, self.le_id_cmd.text())
 
     # --------------------------
 

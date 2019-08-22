@@ -279,7 +279,6 @@ def prepare_data():
     target = Series(cmds['label'])
     data = cmds.drop('label', axis=1)
 
-    # Les données dans le fichiers ont ces colonnes, mais elles ne seront pas utilisé
     params = app.utilities.get_config_data()["detection_params"]
 
     # similarité nom et mail

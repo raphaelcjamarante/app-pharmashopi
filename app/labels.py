@@ -54,6 +54,7 @@ def get_info_lettre_suivie(cmd):
     parameters["Expe_Tel1"] = "+330476772308"
     parameters["Dest_Ad1"] = normalize(customer_info['name'])
     parameters["Dest_Ad2"] = normalize(delivery_address['street_address'])
+    parameters["Dest_Ad3"] = normalize(delivery_address['suburb'])
     parameters["Dest_Ville"] = normalize(delivery_address['city'])
     parameters["Dest_CP"] = delivery_address['postcode']
     parameters["Dest_Pays"] = normalize(delivery_address['country'])
@@ -103,6 +104,7 @@ def make_pdf(data, spacing=1):
     'Destinataire',
     f"          {data['Dest_Ad1'].upper()}",
     f"          {data['Dest_Ad2'].upper()}",
+    f"          {data['Dest_Ad3'].upper()}",
     f"          {data['Dest_CP']} {data['Dest_Ville']}",
     f"          {data['Dest_Pays']}",
     f"          {data['Dest_Tel1']}",
@@ -115,11 +117,14 @@ def make_pdf(data, spacing=1):
 
     for item in data:
         if item == "Expediteur":
-            pdf.set_font("Arial", size=7)
+            pdf.set_font("Arial", size=6)
         elif item == "Destinataire":
             pdf.set_font("Arial", size=10)
         pdf.cell(col_width, row_height * spacing, txt=item)
         pdf.ln(row_height * spacing)
+
+    pdf.line(0.4,0.4,1.6,1.2)
+    pdf.line(0.4,1.2,1.6,0.4)
 
     pdf.output(app.utilities.get_path("docs/etiquette_lettre_suivie.pdf"))
 

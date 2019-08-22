@@ -38,6 +38,9 @@ class Commande():
     """
 
     def __init__(self, cmd):
+
+        print(f"Traitement de la commande : {cmd['id']}")
+
         self.id = cmd['id']
         self.language = cmd['language']
         self.status = cmd['status']

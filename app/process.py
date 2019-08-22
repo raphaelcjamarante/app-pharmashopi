@@ -48,7 +48,7 @@ def picking(batch, sortie, mode_teste):
      Selectionne le mode testing ou le mode production
     """
 
-    print("Envoi des requetes au robot...")
+    print("\nEnvoi des requetes au robot...")
     print("******************************************\n")
 
     indexrequette = 1001

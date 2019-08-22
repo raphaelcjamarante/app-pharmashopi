@@ -53,12 +53,11 @@ class Batch():
 
         self.prods_info = {}
         for prod in list_prods:
+            ref = prod.get_best_reference()
             if mode_teste:
                 robot_stock = '1'
             else:
-                robot_stock = app.robot.robot_stock(prod.reference)
-
-            ref = prod.get_best_reference()
+                robot_stock = app.robot.robot_stock(ref)
             if ref not in self.prods_info:
                 self.prods_info[ref] = {'product': prod, 'total_qte': prod.quantity, 'robot_stock': robot_stock}
             else:

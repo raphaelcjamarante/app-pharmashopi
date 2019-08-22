@@ -29,9 +29,10 @@ def setstatus(idcommande):
         Identification de la commande
     """
 
+    cle_api = app.utilities.get_config_data()['cle_api']
     data = [{"id": idcommande, "status": "2"}]
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    url = f"http://pharmashopi.com/api/orders"
+    url = f"http://pharmashopi.com/api/orders?key={cle_api}"
     r = requests.put(url, data=json.dumps(data), headers=headers)
 
 #------------------------------------------------------------

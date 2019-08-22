@@ -295,9 +295,10 @@ def setstatus(id_cmd, status, tracking_code):
         Code d'expedition Mondial Relay
     """
 
+    cle_api = app.utilities.get_config_data()['cle_api']
     data = [{"id": id_cmd, "status": str(status), "shipping": {"tracking_code": tracking_code}}]
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    url = f"http://pharmashopi.com/api/orders"
+    url = f"http://pharmashopi.com/api/orders?key={cle_api}"
     r = requests.put(url, data=json.dumps(data), headers=headers)
 
 # ----------------------------

@@ -40,6 +40,7 @@ class Product():
     """
 
     def __init__(self, prod):
+
         self.id = prod['id']
         self.reference = prod['reference']
         self.stock_reference = prod['stock_reference']
@@ -72,7 +73,8 @@ class Product():
         self.ean = prod['ean']
         self.stock_total_quantity = prod['stock_total_quantity']
 
-        self.stock = Stock(prod['stock'][self.stock_reference])    
+        if self.stock_reference in prod['stock']:
+            self.stock = Stock(prod['stock'][self.stock_reference])    
 
     # ------------------------------------------
 
@@ -86,7 +88,10 @@ class Product():
 
     def get_stocks(self):
         stocks = self.stock_total_quantity
-        other_stocks = self.stock.get_stock()
+
+        other_stocks = {}
+        if hasattr(self, 'stock'):
+            other_stocks = self.stock.get_stock()
         for key in other_stocks:
             if other_stocks[key] != '':
                 stocks = stocks + f" | {key}: {other_stocks[key]}"
@@ -95,7 +100,7 @@ class Product():
     # ------------------------------------------
 
     def get_best_reference(self):
-        if self.options != {}:
+        if hasattr(self, 'stock') and self.options != {}:
             return self.stock.ean
         elif hasattr(self, 'ean') and self.ean != '':
             return self.ean
